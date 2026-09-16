@@ -2,176 +2,545 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba de C®¢mara - GitHub Pages</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>C√°mara Pro</title>
     <style>
+        /* ELIMINACI√ìN TOTAL DE RESALTADOS Y SELECCI√ìN */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            outline: none !important;
         }
-        body {
-            background: #1a1a1a;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            min-height: 100vh;
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            background: #000;
+            color: #fff;
         }
-        h1 {
-            margin-bottom: 20px;
-            color: #4CAF50;
-        }
-        .contenedor {
+
+        /* Contenedor principal */
+        .camara-app {
+            width: 100%;
+            height: 100vh;
             position: relative;
             background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
-            margin-bottom: 20px;
         }
-        video {
+
+        /* √Årea de video ‚Äî pantalla completa */
+        .vista-camara {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 640px;
-            display: block;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
         }
-        canvas {
+        #video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(1);
+            transition: transform 0.3s ease;
+            border: none;
+        }
+        #video.espejo { transform: scaleX(-1); }
+        #canvas { display: none; }
+
+        /* Barra superior */
+        .barra-superior {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+        .modos {
+            display: flex;
+            gap: 18px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .modo {
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: all 0.2s;
+        }
+        .modo.activo {
+            color: #fff;
+            font-weight: 600;
+            border-bottom: 2px solid #fff;
+        }
+        .icono-superior {
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s, fill 0.2s;
+            width: 24px;
+            height: 24px;
+        }
+        .icono-superior:hover, .icono-superior:active {
+            opacity: 1;
+        }
+
+        /* Tiempo grabaci√≥n */
+        .tiempo-grab {
+            position: absolute;
+            top: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: #ff3b30;
+            font-weight: 600;
+            font-size: 14px;
+            display: none;
+            z-index: 10;
+        }
+        .tiempo-grab.activo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .punto-grab {
+            width: 8px;
+            height: 8px;
+            background: #ff3b30;
+            border-radius: 50%;
+            animation: parpadeo 1s infinite;
+        }
+        @keyframes parpadeo {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Enfoque */
+        .marco-enfoque {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            border: 2px solid #ffeb3b;
+            border-radius: 6px;
+            pointer-events: none;
+            opacity: 0;
+            transform: translate(-50%, -50%);
+            transition: opacity 0.2s;
+        }
+        .marco-enfoque.visible {
+            opacity: 1;
+            animation: pulso 1s ease-out forwards;
+        }
+        @keyframes pulso {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* Aviso */
+        .aviso {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.75);
+            padding: 20px 28px;
+            border-radius: 12px;
+            font-size: 15px;
+            text-align: center;
+            z-index: 5;
+            max-width: 85%;
+            line-height: 1.5;
+        }
+        .oculto { display: none !important; }
+
+        /* Vista previa flotante */
+        .vista-previa-flotante {
+            position: absolute;
+            top: 60px;
+            right: 15px;
+            width: 120px;
+            height: 160px;
+            border-radius: 8px;
+            border: 2px solid #fff;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            z-index: 8;
             display: none;
         }
-        .botones {
+        .vista-previa-flotante img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none;
+        }
+        .vista-previa-flotante.mostrar {
+            display: block;
+            animation: entra 0.3s ease;
+        }
+        @keyframes entra {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Barra inferior */
+        .barra-inferior {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 25px 0 35px;
+            background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 10;
         }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s, opacity 0.2s;
-        }
-        button:hover {
-            transform: scale(1.05);
-            opacity: 0.9;
-        }
-        #btnIniciar {
-            background: #4CAF50;
-            color: white;
-        }
-        #btnCapturar {
-            background: #2196F3;
-            color: white;
-        }
-        #btnDetener {
-            background: #f44336;
-            color: white;
-        }
-        .estado {
-            margin-top: 15px;
-            padding: 10px 20px;
+        .boton-galeria {
+            width: 44px;
+            height: 44px;
             border-radius: 6px;
             background: #333;
+            border: 2px solid #555;
+            overflow: hidden;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s ease;
         }
-        #vistaPrevia {
-            margin-top: 20px;
-            max-width: 320px;
-            border-radius: 8px;
+        .boton-galeria:active {
+            transform: scale(0.92);
+        }
+        .boton-galeria img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
             display: none;
+            pointer-events: none;
+        }
+        .icono-galeria {
+            width: 22px;
+            height: 22px;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .boton-disparo {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: transparent;
+            border: 4px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+        .boton-disparo:active {
+            transform: scale(0.88);
+        }
+        .anillo-interno {
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+        .boton-disparo.grabando .anillo-interno {
+            background: #ff3b30;
+            border-radius: 12px;
+            width: 32px;
+            height: 32px;
+        }
+
+        .boton-cambiar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            border: none;
+            cursor: pointer;
+            transition: transform 0.1s ease, background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .boton-cambiar:hover {
+            background: rgba(255,255,255,0.25);
+        }
+        .boton-cambiar:active {
+            transform: scale(0.92);
+            background: rgba(255,255,255,0.2);
+        }
+        .icono-camara {
+            width: 22px;
+            height: 22px;
+            fill: #fff;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <h1>î9‚1 C®¢mara Web °™ Prueba en GitHub</h1>
-
-    <div class="contenedor">
-        <video id="video" autoplay playsinline></video>
+<div class="camara-app">
+    <!-- √Årea de c√°mara -->
+    <div class="vista-camara" id="areaCamara">
+        <video id="video" autoplay playsinline muted></video>
         <canvas id="canvas"></canvas>
+        <div class="marco-enfoque" id="marcoEnfoque"></div>
     </div>
 
-    <div class="botones">
-        <button id="btnIniciar">Å7ú4 Iniciar C®¢mara</button>
-        <button id="btnCapturar">î9‚2 Tomar Foto</button>
-        <button id="btnDetener">Å7Ç3 Detener</button>
+    <!-- Barra superior -->
+    <div class="barra-superior">
+        <div class="modos">
+            <span class="modo" data-modo="video">V√çDEO</span>
+            <span class="modo activo" data-modo="foto">FOTO</span>
+            <span class="modo" data-modo="retrato">RETRATO</span>
+        </div>
+        <svg class="icono-superior" id="iconoFlash" viewBox="0 0 24 24" fill="#fff">
+            <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+        </svg>
     </div>
 
-    <div class="estado" id="estado">Esperando acci®Æn...</div>
-    <img id="vistaPrevia" alt="Foto capturada">
+    <!-- Tiempo grabaci√≥n -->
+    <div class="tiempo-grab" id="tiempoGrab">
+        <span class="punto-grab"></span>
+        <span id="textoTiempo">00:00</span>
+    </div>
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const btnIniciar = document.getElementById('btnIniciar');
-        const btnCapturar = document.getElementById('btnCapturar');
-        const btnDetener = document.getElementById('btnDetener');
-        const estado = document.getElementById('estado');
-        const vistaPrevia = document.getElementById('vistaPrevia');
+    <!-- Vista previa flotante -->
+    <div class="vista-previa-flotante" id="vistaPrevia">
+        <img id="imgPrevia" alt="Vista previa">
+    </div>
 
-        let transmision = null;
+    <!-- Aviso -->
+    <div class="aviso" id="aviso">
+        Solicitando permiso para acceder a la c√°mara...<br>
+        <small style="opacity:0.7">Acepta para usar la c√°mara</small>
+    </div>
 
-        // Iniciar c®¢mara
-        btnIniciar.addEventListener('click', async () => {
-            try {
-                estado.textContent = 'Solicitando permiso...';
-                transmision = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
-                        facingMode: 'environment' // 'user' para c®¢mara frontal
-                    },
-                    audio: false
-                });
+    <!-- Barra inferior -->
+    <div class="barra-inferior">
+        <div class="boton-galeria" id="botonGaleria">
+            <svg class="icono-galeria" viewBox="0 0 24 24" fill="#fff" id="iconoGaleriaVacio">
+                <path d="M20 5h-3.17L15 3H9L7.17 5H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 14H4V7h4.05l1.83-2h4.24l1.83 2H20v12zM12 9c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 6c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+            </svg>
+            <img id="ultimaFoto" alt="√öltima foto">
+        </div>
 
-                video.srcObject = transmision;
-                await video.play();
+        <button class="boton-disparo" id="botonDisparo">
+            <div class="anillo-interno"></div>
+        </button>
 
-                // Ajustar tamaÅ0ä9o del canvas
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
+        <button class="boton-cambiar" id="botonCambiar">
+            <svg class="icono-camara" viewBox="0 0 24 24">
+                <path d="M16 1H8C6.34 1 5 2.34 5 4v16c0 1.66 1.34 3 3 3h8c1.66 0 3-1.34 3-3V4c0-1.66-1.34-3-3-3zm-4 18c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm4.5-6H14c0-1.66-1.34-3-3-3v-2.5c2.48 0 4.5 2.02 4.5 4.5z"/>
+            </svg>
+        </button>
+    </div>
+</div>
 
-                estado.textContent = 'Å7º3 C®¢mara activa';
-                vistaPrevia.style.display = 'none';
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const botonDisparo = document.getElementById('botonDisparo');
+const botonCambiar = document.getElementById('botonCambiar');
+const botonGaleria = document.getElementById('botonGaleria');
+const aviso = document.getElementById('aviso');
+const marcoEnfoque = document.getElementById('marcoEnfoque');
+const vistaPrevia = document.getElementById('vistaPrevia');
+const imgPrevia = document.getElementById('imgPrevia');
+const ultimaFoto = document.getElementById('ultimaFoto');
+const iconoGaleriaVacio = document.getElementById('iconoGaleriaVacio');
+const tiempoGrab = document.getElementById('tiempoGrab');
+const textoTiempo = document.getElementById('textoTiempo');
+const iconoFlash = document.getElementById('iconoFlash');
+const areaCamara = document.getElementById('areaCamara');
 
-            } catch (err) {
-                console.error('Error:', err);
-                estado.textContent = 'Å7√4 Error: ' + err.message + ' | Aseg®≤rate de usar HTTPS o localhost';
-            }
-        });
+let transmision = null;
+let modoActual = 'foto';
+let camaraFrontal = false;
+let grabando = false;
+let mediaRecorder = null;
+let datosVideo = [];
+let tiempoInicio = null;
+let intervaloTiempo = null;
+let ultimaImagen = null;
+let flashActivo = false;
 
-        // Capturar foto
-        btnCapturar.addEventListener('click', () => {
-            if (!transmision) {
-                estado.textContent = 'Å7≤2Ñ1Ç5 Primero inicia la c®¢mara';
-                return;
-            }
+// Iniciar c√°mara al cargar
+document.addEventListener('DOMContentLoaded', iniciarCamara);
 
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const enlace = document.createElement('a');
-            enlace.download = `foto_${Date.now()}.png`;
-            enlace.href = canvas.toDataURL();
-            enlace.click();
+async function iniciarCamara() {
+    try {
+        const opciones = {
+            video: {
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                facingMode: camaraFrontal ? 'user' : 'environment'
+            },
+            audio: modoActual === 'video'
+        };
 
-            // Mostrar vista previa
-            vistaPrevia.src = canvas.toDataURL();
-            vistaPrevia.style.display = 'block';
-            estado.textContent = 'î9‚2 Foto guardada';
-        });
+        if (transmision) transmision.getTracks().forEach(t => t.stop());
 
-        // Detener c®¢mara
-        btnDetener.addEventListener('click', () => {
-            if (transmision) {
-                transmision.getTracks().forEach(pista => pista.stop());
-                video.srcObject = null;
-                transmision = null;
-                estado.textContent = 'Å7Ç3 C®¢mara detenida';
-            }
-        });
-    </script>
+        transmision = await navigator.mediaDevices.getUserMedia(opciones);
+        video.srcObject = transmision;
+        await video.play();
 
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        video.classList.toggle('espejo', camaraFrontal);
+        aviso.classList.add('oculto');
+
+    } catch (err) {
+        aviso.classList.remove('oculto');
+        aviso.innerHTML = `‚ùå Error de conexi√≥n<br><small>${err.message}</small><br><small>Usa HTTPS/GitHub Pages y acepta el permiso</small>`;
+        console.error(err);
+    }
+}
+
+// Cambiar c√°mara
+botonCambiar.addEventListener('click', e => {
+    e.preventDefault();
+    camaraFrontal = !camaraFrontal;
+    iniciarCamara();
+});
+
+// Cambiar modos
+document.querySelectorAll('.modo').forEach(m => {
+    m.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.modo').forEach(x => x.classList.remove('activo'));
+        m.classList.add('activo');
+        modoActual = m.dataset.modo;
+        if (modoActual === 'video' && grabando) detenerGrabacion();
+    });
+});
+
+// Flash
+iconoFlash.addEventListener('click', e => {
+    e.preventDefault();
+    flashActivo = !flashActivo;
+    iconoFlash.style.fill = flashActivo ? '#ffeb3b' : '#fff';
+    if (transmision) {
+        const pista = transmision.getVideoTracks()[0];
+        if (pista && 'applyConstraints' in pista) {
+            pista.applyConstraints({ advanced: [{ torch: flashActivo }] }).catch(() => {});
+        }
+    }
+});
+
+// Tocar para enfocar
+areaCamara.addEventListener('click', e => {
+    e.preventDefault();
+    const rect = areaCamara.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    marcoEnfoque.style.left = x + 'px';
+    marcoEnfoque.style.top = y + 'px';
+    marcoEnfoque.classList.add('visible');
+    setTimeout(() => marcoEnfoque.classList.remove('visible'), 1000);
+});
+
+// Disparar
+botonDisparo.addEventListener('click', e => {
+    e.preventDefault();
+    if (modoActual === 'foto' || modoActual === 'retrato') tomarFoto();
+    else grabando ? detenerGrabacion() : iniciarGrabacion();
+});
+
+function tomarFoto() {
+    if (!transmision) return;
+    video.style.opacity = '0.3';
+    setTimeout(() => video.style.opacity = '1', 100);
+
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const datos = canvas.toDataURL('image/png');
+    ultimaImagen = datos;
+
+    imgPrevia.src = datos;
+    vistaPrevia.classList.add('mostrar');
+    ultimaFoto.src = datos;
+    ultimaFoto.style.display = 'block';
+    iconoGaleriaVacio.style.display = 'none';
+
+    const a = document.createElement('a');
+    a.href = datos;
+    a.download = `foto_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
+    a.click();
+
+    setTimeout(() => vistaPrevia.classList.remove('mostrar'), 3000);
+}
+
+function iniciarGrabacion() {
+    if (!transmision) return;
+    datosVideo = [];
+    grabando = true;
+    botonDisparo.classList.add('grabando');
+    tiempoGrab.classList.add('activo');
+    tiempoInicio = Date.now();
+    intervaloTiempo = setInterval(actualizarTiempo, 1000);
+
+    try {
+        mediaRecorder = new MediaRecorder(transmision, { mimeType: 'video/webm' });
+        mediaRecorder.ondataavailable = e => e.data.size > 0 && datosVideo.push(e.data);
+        mediaRecorder.onstop = guardarVideo;
+        mediaRecorder.start(1000);
+    } catch (e) {
+        alert('Grabaci√≥n no soportada en este navegador');
+        grabando = false;
+    }
+}
+
+function detenerGrabacion() {
+    grabando = false;
+    botonDisparo.classList.remove('grabando');
+    tiempoGrab.classList.remove('activo');
+    clearInterval(intervaloTiempo);
+    if (mediaRecorder?.state !== 'inactive') mediaRecorder.stop();
+}
+
+function actualizarTiempo() {
+    const s = Math.floor((Date.now() - tiempoInicio) / 1000);
+    const m = Math.floor(s / 60);
+    textoTiempo.textContent = `${m.toString().padStart(2,'0')}:${(s % 60).toString().padStart(2,'0')}`;
+}
+
+function guardarVideo() {
+    const blob = new Blob(datosVideo, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `video_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.webm`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+}
+
+botonGaleria.addEventListener('click', e => {
+    e.preventDefault();
+    if (ultimaImagen) {
+        const a = document.createElement('a');
+        a.href = ultimaImagen;
+        a.target = '_blank';
+        a.click();
+    }
+});
+</script>
 </body>
 </html>
