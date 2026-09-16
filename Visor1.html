@@ -3,381 +3,397 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tienda J</title>
+    <title>Visor HTML</title>
     <style>
-        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
-        html,body{height:100%;background:#f2f2f7;color:#000;overflow-x:hidden}
-        *{-webkit-tap-highlight-color:transparent !important;user-select:none}
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+        html, body { height: 100%; width: 100%; overflow: hidden; transition: background 0.3s; }
 
-        .barra-superior{
-            position:sticky;top:0;z-index:100;
-            display:flex;align-items:center;justify-content:center;
-            padding:12px 16px;background:rgba(255,255,255,0.95);
-            backdrop-filter:blur(20px);border-bottom:0.5px solid #e5e5e7;
+        /* === VARIABLES DE TEMA === */
+        :root {
+            --bg-app: #121212;
+            --bg-barra: #1e1e2e;
+            --bg-nav: #1a1a2e;
+            --bg-btn: #2d2d44;
+            --bg-acento: #2563eb;
+            --texto: #ffffff;
+            --borde: #333;
+            --bg-editor: #1e1e1e;
+            --texto-editor: #f8f8f2;
+            --bg-vista: #ffffff;
         }
-        .titulo-tienda{
-            font-size:20px;font-weight:700;color:#000;
-            position:absolute;left:50%;transform:translateX(-50%);
+        .tema-claro {
+            --bg-app: #f5f5f5;
+            --bg-barra: #ffffff;
+            --bg-nav: #eeeeee;
+            --bg-btn: #dddddd;
+            --bg-acento: #2563eb;
+            --texto: #000000;
+            --borde: #ccc;
+            --bg-editor: #ffffff;
+            --texto-editor: #222222;
+            --bg-vista: #ffffff;
         }
-        .boton-lupa{
-            position:absolute;right:16px;background:none;border:none;
-            cursor:pointer;display:flex;align-items:center;justify-content:center;
-        }
-        .lupa-svg{width:22px;height:22px;fill:#007aff}
+        body { background: var(--bg-app); color: var(--texto); }
 
-        .contenedor-buscador{
-            position:sticky;top:50px;z-index:99;
-            background:#fff;padding:12px 16px;border-bottom:0.5px solid #e5e5e7;
-            display:none;transform:translateY(-100%);opacity:0;
-            transition:all 0.25s ease;
+        /* === BARRA SUPERIOR === */
+        .barra-superior {
+            height: 60px;
+            background: var(--bg-barra);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            border-bottom: 2px solid var(--borde);
+            z-index: 10;
         }
-        .contenedor-buscador.activo{display:block;transform:translateY(0);opacity:1}
-        .buscador{width:100%;padding:10px 14px;border-radius:10px;border:none;background:#e5e5e7;font-size:17px;outline:none}
-
-        .seccion{margin-bottom:32px;padding:0 16px}
-        .seccion-titulo{font-size:22px;font-weight:700;margin-bottom:14px;color:#000}
-        .carrusel{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;-ms-overflow-style:none}
-        .carrusel::-webkit-scrollbar{display:none}
-
-        .img-auto{
-            width:100%;height:100%;object-fit:cover;
-            object-position:center;
+        .btn-tema {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-btn);
+            color: var(--texto);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
         }
-
-        .tarjeta-app{
-            flex-shrink:0;width:150px;
-            background:#fff;border-radius:16px;padding:12px;
-            display:flex;flex-direction:column;gap:10px;
-            box-shadow:0 1px 3px rgba(0,0,0,0.05);
-        }
-        .tarjeta-imagen{
-            width:100%;aspect-ratio:1/1;background:#f2f2f7;
-            border-radius:12px;display:flex;align-items:center;justify-content:center;
-            font-size:52px;overflow:hidden;
-        }
-        .tarjeta-nombre{
-            font-size:15px;font-weight:600;color:#000;
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-        }
-        .boton-accion{
-            align-self:flex-start;padding:6px 16px;border-radius:20px;
-            border:none;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;
-        }
-        .boton-instalar{background:#007aff;color:#fff}
-        .boton-instalar:active{opacity:0.8}
-        .boton-abrir{background:#e5e5e7;color:#007aff}
-        .boton-abrir:active{background:#d1d1d6}
-        .boton-instalando{background:#ff9500;color:#fff;cursor:wait}
-
-        .tarjeta-grande{
-            flex-shrink:0;width:320px;
-            background:#fff;border-radius:20px;padding:0;
-            display:flex;flex-direction:column;
-            box-shadow:0 2px 8px rgba(0,0,0,0.08);
-            overflow:hidden;
-        }
-        .tg-portada-principal{
-            width:100%;height:160px;
-            background:linear-gradient(135deg, #007aff, #5856d6);
-            display:flex;align-items:center;justify-content:center;
-            font-size:72px;position:relative;overflow:hidden;
-        }
-        .tg-inferior{
-            padding:12px;display:flex;align-items:center;gap:10px;
-            min-height:70px;
-        }
-        .tg-logo{
-            width:40px;height:40px;background:#f2f2f7;border-radius:10px;
-            display:flex;align-items:center;justify-content:center;font-size:22px;
-            flex-shrink:0;overflow:hidden;
-        }
-        .tg-texto{
-            flex:1;display:flex;flex-direction:column;gap:2px;
-            overflow:hidden;
-        }
-        .tg-nombre{font-size:15px;font-weight:700;color:#000}
-        .tg-desc{font-size:12px;color:#86868b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .tg-boton{
-            padding:7px 18px;border-radius:20px;border:none;
-            font-size:14px;font-weight:600;cursor:pointer;
-            flex-shrink:0;
+        .logo {
+            background: var(--bg-acento);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
         }
 
-        .tarjeta-sin-portada{
-            flex-shrink:0;width:320px;
-            background:#fff;border-radius:20px;padding:16px;
-            display:flex;align-items:center;gap:12px;
-            box-shadow:0 2px 8px rgba(0,0,0,0.08);
-            min-height:90px;
+        /* === BARRA DE HERRAMIENTAS — ✅ MÁS ALTURA PARA QUE QUEDE TODO EN MÓVIL === */
+        .barra-herramientas {
+            min-height: 56px; /* Más altura para que las flechas no se corten */
+            background: var(--bg-nav);
+            display: none;
+            align-items: center;
+            padding: 8px 10px;
+            gap: 6px;
+            border-bottom: 1px solid var(--borde);
+            flex-wrap: wrap; /* Si no cabe, se acomoda hacia abajo */
+            z-index: 5;
         }
-        .tsp-logo{
-            width:48px;height:48px;background:#f2f2f7;border-radius:12px;
-            display:flex;align-items:center;justify-content:center;font-size:24px;
-            flex-shrink:0;overflow:hidden;
+        .barra-herramientas.visible { display: flex; }
+        .btn-herramienta {
+            background: var(--bg-btn);
+            color: var(--texto);
+            border: none;
+            padding: 6px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
-        .tsp-texto{
-            flex:1;display:flex;flex-direction:column;gap:4px;
-            overflow:hidden;
+        .btn-herramienta:hover { background: var(--bg-acento); color: white; }
+
+        /* === BUSCADOR CON FLECHAS — TODO VISIBLE, TAMAÑO AJUSTADO === */
+        .buscador-contenedor {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: auto;
+            flex-shrink: 0;
         }
-        .tsp-nombre{
-            font-size:16px;font-weight:700;color:#000;
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        .buscar-input {
+            padding: 6px 8px;
+            border: 1px solid var(--borde);
+            border-radius: 4px;
+            background: var(--bg-editor);
+            color: var(--texto);
+            outline: none;
+            width: 120px; /* Más angosto para dejar espacio a flechas */
+            font-size: 14px;
         }
-        .tsp-desc{
-            font-size:13px;color:#86868b;
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+        .btn-navegar {
+            background: var(--bg-btn);
+            color: var(--texto);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
-        .tsp-boton{
-            padding:8px 20px;border-radius:20px;border:none;
-            font-size:14px;font-weight:600;cursor:pointer;
-            flex-shrink:0;
+        .btn-navegar:hover { background: var(--bg-acento); color: white; }
+        .contador-coincidencias {
+            font-size: 11px;
+            color: #888;
+            min-width: 55px;
+            text-align: center;
+            white-space: nowrap;
         }
 
-        .sin-resultados{text-align:center;padding:40px 20px;color:#86868b;font-size:16px}
+        /* === BARRA DE NAVEGACIÓN — ✅ SE MUEVE MÁS ABAJO PARA DEJAR ESPACIO A FLECHAS === */
+        .navegacion {
+            height: 52px;
+            background: var(--bg-nav);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-bottom: 2px solid var(--borde);
+            position: relative;
+            z-index: 3;
+            margin-top: 0; /* Queda justo debajo de la barra de herramientas */
+        }
+        .btn-nav {
+            flex: 1;
+            height: 100%;
+            background: var(--bg-btn);
+            color: var(--texto);
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0 2px;
+        }
+        .btn-nav.activo { background: var(--bg-acento); color: white; }
+        .btn-nav:first-child { border-right: 1px solid var(--borde); }
+        .btn-nav:last-child { border-left: 1px solid var(--borde); }
+
+        /* === ÁREA DE CONTENIDO — ALTURA AJUSTADA AUTOMÁTICAMENTE === */
+        .contenedor {
+            position: relative;
+            background: var(--bg-vista);
+            width: 100%;
+            height: calc(100vh - 112px); /* Altura cuando NO hay barra de herramientas */
+        }
+        /* Cuando la barra de herramientas está visible, se resta su altura */
+        .barra-herramientas.visible + .navegacion + .contenedor,
+        .contenedor.ajustado {
+            height: calc(100vh - 168px); /* ✅ Espacio extra para la barra más alta */
+        }
+        #editor, #vistaWeb {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+        #editor {
+            background: var(--bg-editor);
+            color: var(--texto-editor);
+            padding: 15px;
+            font-family: monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+            z-index: 2;
+        }
+        #vistaWeb {
+            background: white;
+            z-index: 1;
+        }
+        .oculto { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="barra-superior">
-    <h1 class="titulo-tienda">Tienda J</h1>
-    <button class="boton-lupa" id="btnLupa">
-        <svg class="lupa-svg" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zm0-7C8.12 7 7 8.12 7 9.5S8.12 12 9.5 12 12 10.88 12 9.5 10.88 7 9.5 7z"></path></svg>
-    </button>
-</div>
+    <header class="barra-superior">
+        <button class="btn-tema" id="btnTema">🌙</button>
+        <div class="logo">Visor HTML</div>
+    </header>
 
-<div class="contenedor-buscador" id="contenedorBuscador">
-    <input type="text" class="buscador" id="buscador" placeholder="Buscar en Tienda J...">
-</div>
-
-<div id="contenido">
-    <div class="seccion">
-        <h2 class="seccion-titulo">8¬2 Destacados</h2>
-        <div class="carrusel" id="carruselDestacados"></div>
-    </div>
-    <div class="seccion">
-        <h2 class="seccion-titulo">”9Á2 Juegos</h2>
-        <div class="carrusel" id="carruselJuegos"></div>
-    </div>
-    <div class="seccion">
-        <h2 class="seccion-titulo">•0•0„1‚5 Herramientas</h2>
-        <div class="carrusel" id="carruselHerramientas"></div>
-    </div>
-    <div class="seccion">
-        <h2 class="seccion-titulo">”9à4 Aplicaciones</h2>
-        <div class="carrusel" id="carruselAplicaciones"></div>
-    </div>
-</div>
-
-<div id="resultadosBusqueda" style="display:none;padding:0 16px"></div>
-
-<script>
-const APPS = {
-    destacados: [
-        {
-            id: 'app-carreras', 
-            nombre: 'Jetpack', 
-            descripcion: 'Halfbrick Studios',
-            categoria: 'carros, carrera, autos, velocidad', 
-            icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhEZ2RMy61glXxLnJK6xSQoh19R1L77VPu0ZB30phQ6LsVsFsGjMKtQfIOf3OQvp_2gNrOO4oaIwxIKNzJS_qoIYkPJJ13B2LGLJaKgPeoiKribRyfjsETfRkTDMDKujDtOryygUn9qrbNr_V31UIJIAcKtfkf16Cd8aJfmvalbuJuiIp4TYo8USdMPJvk/s1200/jetpack-joyride-logo.png ',
-            portada: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjV_6TAqwdmQucvpJAGT-hbgU9qJ4T-l4_j1TFgzft79bMqQZVhUeqXwzlj5I3aF01c6kJD1EhrrRpCDyzHJQuNMk9SOLuLddX5Tm7L4y1dOs7P0CldCLX83-FaoxQy7O5X-C5eFT-czRuu75smBPfkJoA9iWj0nSTjmzostWcnm_DHJx4f8ot-OFXbLGk/s1200/jetpack-joyride-pcp_16x9-cover.jpeg',
-            rutaDestino: 'Jetpack.html', 
-            tipo: 'grande'
-        },
-        {
-            id: 'app-terror', 
-            nombre: 'Mahjong Solitaire: World Tour', 
-            descripcion: 'Vetx',
-            categoria: 'terror, miedo, suspenso, oscuridad', 
-            icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhYSiJ-rwjh0bKD0ieEZunSVzFfpOzXjngcq39miAWLKWwuX30cdeSAi76LGjMsMZHVGvnowJg7DQHTgQYw1MLNW0VP5hzw5apO2vEkkM_AnphlrJ5eKj8YtcxDj-FyFwGwk6qwTi2aQHJ-qS-2mNNBAvSidbvE8VltBsHyYFWEay9qGOZ4FO4NDLE3hyphenhyphen0/s1024/mahjong-solitaire-world-tour.webp',
-            portada: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhVSS1AMpoRmzIOlytAlhbGK9eBrZyJz2agxM2FwKgvgv4yC6QPMVZapxu__gnErSPNkco7iiOF-WfrEQJeoDhIJ2cSImGWodus0jctok1xUYkjQebQMHle6epN026HFhcC1coVoP5ImY5zrff4LtqOcHCCRLUjvn9E8CJXqC2FqpoHMY8Prc6lX1b_GWw/s672/mahjong-solitaire-world-tour%20(1).webp',
-            rutaDestino: 'Mahjong-Solitaire.htmm', 
-            tipo: 'grande'
-        }
-    ],
-    juegos: [
-        {id: 'app-accion', nombre: 'Mergest Kingdom', categoria: 'puzles, guerra', icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi6wA38kM8w0v9GRUOh2QEt_sAlX0eFzzC1tK432Wggm6ovtomo6iu56RX6mslFs9VnVNaUpXsNikZ2XUBGEtaSnGD-tQ8cK0WvE-nxoCBegtdcR1tufYuYhSohwAzz6_VsX92kVMCWL40YlzRgswYgnjBtIJrirfEQ0bXKV_vl15ZUTKd8NmmGvtpTkH4/s447/images%20(1).jpeg ', rutaDestino: 'Mergest-Kingdom.html'},
-        {id: 'app-puzzle', nombre: 'Era evolution', categoria: 'logica, inteligencia', icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjAEZ-weFxoj_L0TsZGtks8LV0-Rem5X6IXYEFfsW3EdCuj5eGwg5hCnCPFBhmoRqQKQTHe8y-knA2I5SPbDBcMCIb1fDe8w7wXxs7s8pox0Nvfnxc3Oa1tYx5dX_l_V4kMYqBg6qnTYhloq4f_nHWILX9tdHueSKMb_fnfBakShEJY-FbRq-Ej6_Q7wco/s412/248399_7_sq%20(1).jpg', rutaDestino: 'Era-evolicion.html'},
-        {id: 'app-carreras2', nombre: 'Veck.io', categoria: 'carros, carrera, velocidad', icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEikZjqf_LyEC_SLBRqJMqYahvClyRfqg63PzMSMcnOc8Z0cFix4BQm0Yt1NAEpbrynwz8fx8XuQaMrYS4cSR7mMeJQcYcrrtAWYry547MmDHj75IeR7uZl-bJb_-VSg78xEmVdD9YJbwIuaBhJXG5kQYBfadvmZcoFHh3xfEqxT35tY_XHyW1UpeuJzl5Y/s1080/veck-io-game1.jpg', rutaDestino: 'go:S005'},
-        {id: 'app-juego', nombre: 'Dynast.io', categoria: 'plataforma, aventura, saltos', icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhYUROBEHiY9UOvqHaOMn6qo1avk_AmiGgMtlyz954JCbCtwGKlhwO-YmKKSSKYhKp4nroEY7Sbkn_bM8UfPbHWtaJcGwzyhdVvLKXLYqFqAIKBtG5hQdOUpshujqNNCkTYdekXGAIADzie7EyieQ1fNm7x3-xRm8ZLmlHGX9fHf2k5rHd7d-zQVquAetE/s604/dynast.jpg ', rutaDestino: 'Dynast-io.html'},
-        {id: 'app-estrategia', nombre: 'Reino Total', categoria: 'estrategia, guerra, reino', icono: '”9Ç8', rutaDestino: 'go:S007'}
-    ],
-    herramientas: [
-        {id: 'app-calculadora', nombre: 'Calculadora', descripcion: 'APPS Quri', categoria: 'herramienta, calculos, matematicas', icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgVHjAZVKquN-4Wi-XzTqHw2Y9GPQSnxdccjyJhzH6TRyWkSobeMgDtNDmTQovseXL2DNcUtasBBV-Auosn2kEb8wczJZJgyYKrB9ucTrOU-KqyBDr1MSAghuRnrnNuSVi7_30_NrhPLDoxDlTV0RSXU0Ckzd_R-Il65OIBuO7mu1iq4q19QnIcHLklVpo/s1280/IMG_20260909_091040_091113%20(1).png', rutaDestino: 'calculadora.html', tipo: 'sin-portada'},
-        {id: 'app-herramienta', nombre: 'Visor HTML', descripcion: 'APPS Quri', categoria: 'herramientas, html, Visor, estudio', icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjfqMxaWBkiHUpzEDJGfz8fI5t9u2pLl4s-x4bywHu3Hfi2C0Itw2K9FCpwnqhSK_OspKIqasXrRTiMWah36mcoW_P8ZSO1r5OCOhAWMqz-_W5wwYOsMSoFiW6o7m8Mspn6UH7KK_h-KgGvStJwRDPU7-7bHEBzHqLHTHVJYiI-TynzEIsWcYT1ZyOHN8c/s1099/1788965838323.png', rutaDestino: 'visorhtml.html', tipo: 'sin-portada'},
-        {id: 'app-notas', nombre: 'Mis Notas', descripcion: 'Guarda tus ideas', categoria: 'utilidad, texto, notas', icono: '”9ß5', rutaDestino: 'go:S010', tipo: 'sin-portada'}
-    ],
-    aplicaciones: [
-        {id: 'app-pel¨ªcula', nombre: 'Zeply', descripcion: 'Zeply', categoria: 'TV, pel¨ªculas, Entrenamiento', icono: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi055FcFTeGpGold7Tl6xm90cd__nJdvMm2w2XMyzOqZW4yvkQ_wXukUD0pTwnmRO9PEj4gDDKll4woJ_XlXoqoutgdlAhCY_JzvpGy_lBXoOzkJZAw3vIXY4ryBUxxDFt7APyd-MNpMR4jQn3cRGttq0YzvZ2_YGm58SmlE_WkcdadCmW4ZFEL8O4LIPI/s1080/1182026125138-1_081835.png ', rutaDestino: 'Zeply.html', tipo: 'sin-portada'},
-        {id: 'app-YouTube', nombre: 'YouTube Lite', descripcion: 'Zeply', categoria: 'Videos, entretenimiento, YouTube', icono: 'https://img.icons8.com/?size=100&id=19318&format=png&color=000000', rutaDestino: 'go:17', tipo: 'sin-portada'}
-    ]
-};
-
-const btnLupa = document.getElementById('btnLupa');
-const contenedorBuscador = document.getElementById('contenedorBuscador');
-const buscador = document.getElementById('buscador');
-const contenido = document.getElementById('contenido');
-const resultadosBusqueda = document.getElementById('resultadosBusqueda');
-
-btnLupa.addEventListener('click', () => {
-    contenedorBuscador.classList.toggle('activo');
-    if(contenedorBuscador.classList.contains('activo')) buscador.focus();
-    else { buscador.value = ''; contenido.style.display = 'block'; resultadosBusqueda.style.display = 'none'; }
-});
-
-buscador.addEventListener('input', (e) => {
-    const consulta = e.target.value.trim();
-    if(!consulta){ contenido.style.display = 'block'; resultadosBusqueda.style.display = 'none'; return; }
-    contenido.style.display = 'none'; resultadosBusqueda.style.display = 'block'; resultadosBusqueda.innerHTML = '';
-    
-    const consultaNormalizada = normalizarTexto(consulta);
-    const palabrasClave = consultaNormalizada.split(/\s+/);
-    const palabrasIgnorar = ['el','la','los','las','de','del','un','una','unos','unas','y','o','que','juego','juegos','app','apps','aplicacion','aplicaciones'];
-    const palabrasUtiles = palabrasClave.filter(palabra => !palabrasIgnorar.includes(palabra) && palabra.length > 1);
-    
-    const todasApps = [...APPS.destacados, ...APPS.juegos, ...APPS.herramientas, ...APPS.aplicaciones];
-    const resultados = todasApps.filter(app => {
-        const textoBuscar = normalizarTexto(app.nombre + ' ' + (app.descripcion||'') + ' ' + (app.categoria||''));
-        return palabrasUtiles.length === 0 || palabrasUtiles.some(palabra => textoBuscar.includes(palabra));
-    });
-    
-    if(resultados.length === 0){
-        resultadosBusqueda.innerHTML = `<div class="sin-resultados">”9ä3 No se encontr¨® nada para "${consulta}"</div>`;
-        return;
-    }
-    resultados.forEach(app => resultadosBusqueda.appendChild(crearTarjeta(app)));
-});
-
-function normalizarTexto(texto){
-    return texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s]/g, '').trim();
-}
-
-function esImagen(valor){
-    return valor.startsWith('http://') || valor.startsWith('https://') || valor.startsWith('/') || valor.includes('.jpg') || valor.includes('.png') || valor.includes('.webp') || valor.includes('.gif');
-}
-
-function crearTarjeta(app){
-    const estaInstalada = verificarInstalada(app.id);
-
-    if(app.tipo === 'grande'){
-        const tarjeta = document.createElement('div');
-        tarjeta.className = 'tarjeta-grande';
+    <!-- 🛠️ BARRA DE HERRAMIENTAS — MÁS ALTA, FLECHAS SIEMPRE VISIBLES -->
+    <nav class="barra-herramientas" id="barraHerramientas">
+        <button class="btn-herramienta" id="btnDeshacer">↶ Deshacer</button>
+        <button class="btn-herramienta" id="btnRehacer">↷ Rehacer</button>
+        <button class="btn-herramienta" id="btnGuardar">💾 Guardar</button>
         
-        const valorPortada = app.portada !== undefined ? app.portada : app.icono;
-        const contenidoPortada = esImagen(valorPortada) 
-            ? `<img src="${valorPortada}" class="img-auto" alt="${app.nombre}">` 
-            : valorPortada;
-        
-        const contenidoLogo = esImagen(app.icono) 
-            ? `<img src="${app.icono}" class="img-auto" alt="${app.nombre}">` 
-            : app.icono;
-        
-        tarjeta.innerHTML = `
-            <div class="tg-portada-principal">${contenidoPortada}</div>
-            <div class="tg-inferior">
-                <div class="tg-logo">${contenidoLogo}</div>
-                <div class="tg-texto">
-                    <div class="tg-nombre">${app.nombre}</div>
-                    <div class="tg-desc">${app.descripcion || ''}</div>
-                </div>
-                <button class="tg-boton ${estaInstalada ? 'boton-abrir' : 'boton-instalar'}"
-                        data-id="${app.id}" data-ruta="${app.rutaDestino}"
-                        data-nombre="${app.nombre}" data-icono="${app.icono}">
-                    ${estaInstalada ? 'Abrir' : 'Instalar'}
-                </button>
-            </div>
-        `;
-        tarjeta.querySelector('button').addEventListener('click', (e) => manejarBoton(e, app));
-        return tarjeta;
-    }
+        <!-- 🔍 BUSCADOR + FLECHAS — TODO VISIBLE EN MÓVIL -->
+        <div class="buscador-contenedor">
+            <input type="text" class="buscar-input" id="buscarInput" placeholder="Buscar...">
+            <span class="contador-coincidencias" id="contadorCoincidencias"></span>
+            <button class="btn-navegar" id="btnArriba" title="Anterior">⬆️</button>
+            <button class="btn-navegar" id="btnAbajo" title="Siguiente">⬇️</button>
+        </div>
+    </nav>
 
-    if(app.tipo === 'sin-portada'){
-        const tarjeta = document.createElement('div');
-        tarjeta.className = 'tarjeta-sin-portada';
-        
-        const contenidoLogo = esImagen(app.icono) 
-            ? `<img src="${app.icono}" class="img-auto" alt="${app.nombre}">` 
-            : app.icono;
-        
-        tarjeta.innerHTML = `
-            <div class="tsp-logo">${contenidoLogo}</div>
-            <div class="tsp-texto">
-                <div class="tsp-nombre">${app.nombre}</div>
-                <div class="tsp-desc">${app.descripcion || ''}</div>
-            </div>
-            <button class="tsp-boton ${estaInstalada ? 'boton-abrir' : 'boton-instalar'}"
-                    data-id="${app.id}" data-ruta="${app.rutaDestino}"
-                    data-nombre="${app.nombre}" data-icono="${app.icono}">
-                ${estaInstalada ? 'Abrir' : 'Instalar'}
-            </button>
-        `;
-        tarjeta.querySelector('button').addEventListener('click', (e) => manejarBoton(e, app));
-        return tarjeta;
-    }
+    <!-- 📂 BARRA DE NAVEGACIÓN — QUEDA MÁS ABAJO, SIN TAPAR NADA -->
+    <nav class="navegacion">
+        <button class="btn-nav" id="btnAbrir">📂 Abrir</button>
+        <button class="btn-nav activo" id="btnCodigo">📝 Código</button>
+        <button class="btn-nav" id="btnVista">🌐 Vista</button>
+    </nav>
 
-    const tarjeta = document.createElement('div');
-    tarjeta.className = 'tarjeta-app';
-    
-    const contenidoImagen = esImagen(app.icono) 
-        ? `<img src="${app.icono}" class="img-auto" alt="${app.nombre}">` 
-        : app.icono;
-    
-    tarjeta.innerHTML = `
-        <div class="tarjeta-imagen">${contenidoImagen}</div>
-        <div class="tarjeta-nombre">${app.nombre}</div>
-        <button class="boton-accion ${estaInstalada ? 'boton-abrir' : 'boton-instalar'}"
-                data-id="${app.id}" data-ruta="${app.rutaDestino}"
-                data-nombre="${app.nombre}" data-icono="${app.icono}">
-            ${estaInstalada ? 'Abrir' : 'Instalar'}
-        </button>
-    `;
-    tarjeta.querySelector('button').addEventListener('click', (e) => manejarBoton(e, app));
-    return tarjeta;
-}
+    <main class="contenedor" id="contenedor">
+        <textarea id="editor" placeholder="Escribe tu código HTML aquí..."></textarea>
+        <iframe id="vistaWeb" title="Vista previa"></iframe>
+    </main>
 
-function verificarInstalada(idApp){
-    const orden = JSON.parse(localStorage.getItem('so_orden') || '["ajustes","tienda"]');
-    return orden.includes(idApp);
-}
+    <script>
+        const editor = document.getElementById('editor');
+        const vistaWeb = document.getElementById('vistaWeb');
+        const btnAbrir = document.getElementById('btnAbrir');
+        const btnCodigo = document.getElementById('btnCodigo');
+        const btnVista = document.getElementById('btnVista');
+        const btnTema = document.getElementById('btnTema');
+        const barraHerramientas = document.getElementById('barraHerramientas');
+        const btnGuardar = document.getElementById('btnGuardar');
+        const btnDeshacer = document.getElementById('btnDeshacer');
+        const btnRehacer = document.getElementById('btnRehacer');
+        const buscarInput = document.getElementById('buscarInput');
+        const contadorCoincidencias = document.getElementById('contadorCoincidencias');
+        const btnArriba = document.getElementById('btnArriba');
+        const btnAbajo = document.getElementById('btnAbajo');
+        const contenedor = document.getElementById('contenedor');
 
-function manejarBoton(e, app){
-    e.stopPropagation();
-    const btn = e.target;
-    
-    if(verificarInstalada(app.id)){
-        window.location.href = app.rutaDestino;
-    } else {
-        btn.textContent = 'Instalando...';
-        btn.classList.remove('boton-instalar');
-        btn.classList.add('boton-instalando');
-        btn.disabled = true;
+        // === 🎨 TEMA ===
+        let temaOscuro = true;
+        btnTema.addEventListener('click', () => {
+            temaOscuro = !temaOscuro;
+            document.body.classList.toggle('tema-claro', !temaOscuro);
+            btnTema.textContent = temaOscuro ? '🌙' : '☀️';
+        });
 
-        setTimeout(() => {
-            const orden = JSON.parse(localStorage.getItem('so_orden') || '["ajustes","tienda"]');
-            orden.push(app.id);
-            localStorage.setItem('so_orden', JSON.stringify(orden));
-            
-            const appsNuevas = JSON.parse(localStorage.getItem('so_apps_nuevas') || '{}');
-            appsNuevas[app.id] = {
-                nombre: app.nombre,
-                icono: app.icono,
-                ruta: app.rutaDestino
+        // === 📂 ABRIR ===
+        btnAbrir.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html,.htm';
+            input.onchange = e => {
+                const archivo = e.target.files[0];
+                if (!archivo) return;
+                const lector = new FileReader();
+                lector.onload = evt => {
+                    editor.value = evt.target.result;
+                    mostrarCodigo();
+                };
+                lector.readAsText(archivo);
             };
-            localStorage.setItem('so_apps_nuevas', JSON.stringify(appsNuevas));
+            input.click();
+        });
 
-            btn.textContent = 'Abrir';
-            btn.classList.remove('boton-instalando');
-            btn.classList.add('boton-abrir');
-            btn.disabled = false;
-        }, 1000);
-    }
-}
+        // === 📝 MOSTRAR CÓDIGO — ✅ MUESTRA BARRA Y AJUSTA ESPACIO ===
+        function mostrarCodigo() {
+            btnCodigo.classList.add('activo');
+            btnVista.classList.remove('activo');
+            editor.classList.remove('oculto');
+            vistaWeb.classList.add('oculto');
+            barraHerramientas.classList.add('visible');
+            contenedor.classList.add('ajustado'); // ✅ Baja el contenido para dejar espacio a flechas
+        }
 
-window.onload = () => {
-    APPS.destacados.forEach(app => document.getElementById('carruselDestacados').appendChild(crearTarjeta(app)));
-    APPS.juegos.forEach(app => document.getElementById('carruselJuegos').appendChild(crearTarjeta(app)));
-    APPS.herramientas.forEach(app => document.getElementById('carruselHerramientas').appendChild(crearTarjeta(app)));
-    APPS.aplicaciones.forEach(app => document.getElementById('carruselAplicaciones').appendChild(crearTarjeta(app)));
-};
-</script>
+        // === 🌐 MOSTRAR VISTA — ✅ OCULTA BARRA Y RECUPERA ESPACIO ===
+        function mostrarVista() {
+            btnVista.classList.add('activo');
+            btnCodigo.classList.remove('activo');
+            vistaWeb.srcdoc = editor.value;
+            editor.classList.add('oculto');
+            vistaWeb.classList.remove('oculto');
+            barraHerramientas.classList.remove('visible');
+            contenedor.classList.remove('ajustado'); // ✅ Recupera el espacio completo
+        }
+
+        btnCodigo.addEventListener('click', mostrarCodigo);
+        btnVista.addEventListener('click', mostrarVista);
+
+        // === 💾 GUARDAR CON NOMBRE ===
+        btnGuardar.addEventListener('click', () => {
+            const nombreArchivo = prompt('Nombre del archivo:', 'archivo.html');
+            if (!nombreArchivo) return;
+            const nombreFinal = nombreArchivo.endsWith('.html') ? nombreArchivo : nombreArchivo + '.html';
+            const blob = new Blob([editor.value], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nombreFinal;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // === ↩️ DESHACER / REHACER ===
+        const historial = [];
+        let posicion = -1;
+        let ultimoValor = '';
+        function guardarHistorial() {
+            if (editor.value === ultimoValor) return;
+            historial.splice(posicion + 1);
+            historial.push(editor.value);
+            posicion = historial.length - 1;
+            ultimoValor = editor.value;
+        }
+        editor.addEventListener('input', guardarHistorial);
+        historial.push(editor.value);
+        btnDeshacer.addEventListener('click', () => {
+            if (posicion > 0) {
+                posicion--;
+                editor.value = historial[posicion];
+                ultimoValor = editor.value;
+            }
+        });
+        btnRehacer.addEventListener('click', () => {
+            if (posicion < historial.length - 1) {
+                posicion++;
+                editor.value = historial[posicion];
+                ultimoValor = editor.value;
+            }
+        });
+
+        // === 🔍 BUSCADOR CON FLECHAS ===
+        let indiceActual = -1;
+        let coincidencias = [];
+
+        buscarInput.addEventListener('input', () => {
+            const texto = buscarInput.value;
+            coincidencias = [];
+            indiceActual = -1;
+            
+            if (!texto) {
+                contadorCoincidencias.textContent = '';
+                editor.selectionStart = editor.selectionEnd = 0;
+                return;
+            }
+
+            const contenido = editor.value;
+            let pos = 0;
+            while ((pos = contenido.indexOf(texto, pos)) !== -1) {
+                coincidencias.push({ start: pos, end: pos + texto.length });
+                pos += texto.length;
+            }
+
+            contadorCoincidencias.textContent = coincidencias.length > 0 
+                ? `${indiceActual + 1}/${coincidencias.length}` 
+                : 'Sin resultados';
+        });
+
+        btnAbajo.addEventListener('click', () => {
+            if (coincidencias.length === 0) return;
+            indiceActual = (indiceActual + 1) % coincidencias.length;
+            seleccionarCoincidencia();
+        });
+
+        btnArriba.addEventListener('click', () => {
+            if (coincidencias.length === 0) return;
+            indiceActual = indiceActual <= 0 ? coincidencias.length - 1 : indiceActual - 1;
+            seleccionarCoincidencia();
+        });
+
+        function seleccionarCoincidencia() {
+            const sel = coincidencias[indiceActual];
+            editor.focus();
+            editor.selectionStart = sel.start;
+            editor.selectionEnd = sel.end;
+            const lineHeight = 24;
+            const linea = editor.value.substring(0, sel.start).split('\n').length - 1;
+            editor.scrollTop = linea * lineHeight - editor.clientHeight / 2 + 50;
+            contadorCoincidencias.textContent = `${indiceActual + 1}/${coincidencias.length}`;
+        }
+    </script>
+
 </body>
 </html>
