@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Cámara - GitHub Pages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            background: #1a1a1a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+        .contenedor {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+            margin-bottom: 20px;
+        }
+        video {
+            width: 100%;
+            max-width: 640px;
+            display: block;
+        }
+        canvas {
+            display: none;
+        }
+        .botones {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            opacity: 0.9;
+        }
+        #btnIniciar {
+            background: #4CAF50;
+            color: white;
+        }
+        #btnCapturar {
+            background: #2196F3;
+            color: white;
+        }
+        #btnDetener {
+            background: #f44336;
+            color: white;
+        }
+        .estado {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            background: #333;
+        }
+        #vistaPrevia {
+            margin-top: 20px;
+            max-width: 320px;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📷 Cámara Web — Prueba en GitHub</h1>
+
+    <div class="contenedor">
+        <video id="video" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="botones">
+        <button id="btnIniciar">▶ Iniciar Cámara</button>
+        <button id="btnCapturar">📸 Tomar Foto</button>
+        <button id="btnDetener">⏹ Detener</button>
+    </div>
+
+    <div class="estado" id="estado">Esperando acción...</div>
+    <img id="vistaPrevia" alt="Foto capturada">
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const btnIniciar = document.getElementById('btnIniciar');
+        const btnCapturar = document.getElementById('btnCapturar');
+        const btnDetener = document.getElementById('btnDetener');
+        const estado = document.getElementById('estado');
+        const vistaPrevia = document.getElementById('vistaPrevia');
+
+        let transmision = null;
+
+        // Iniciar cámara
+        btnIniciar.addEventListener('click', async () => {
+            try {
+                estado.textContent = 'Solicitando permiso...';
+                transmision = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'environment' // 'user' para cámara frontal
+                    },
+                    audio: false
+                });
+
+                video.srcObject = transmision;
+                await video.play();
+
+                // Ajustar tamaño del canvas
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                estado.textContent = '✅ Cámara activa';
+                vistaPrevia.style.display = 'none';
+
+            } catch (err) {
+                console.error('Error:', err);
+                estado.textContent = '❌ Error: ' + err.message + ' | Asegúrate de usar HTTPS o localhost';
+            }
+        });
+
+        // Capturar foto
+        btnCapturar.addEventListener('click', () => {
+            if (!transmision) {
+                estado.textContent = '⚠️ Primero inicia la cámara';
+                return;
+            }
+
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const enlace = document.createElement('a');
+            enlace.download = `foto_${Date.now()}.png`;
+            enlace.href = canvas.toDataURL();
+            enlace.click();
+
+            // Mostrar vista previa
+            vistaPrevia.src = canvas.toDataURL();
+            vistaPrevia.style.display = 'block';
+            estado.textContent = '📸 Foto guardada';
+        });
+
+        // Detener cámara
+        btnDetener.addEventListener('click', () => {
+            if (transmision) {
+                transmision.getTracks().forEach(pista => pista.stop());
+                video.srcObject = null;
+                transmision = null;
+                estado.textContent = '⏹ Cámara detenida';
+            }
+        });
+    </script>
+
+</body>
+</html>
