@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SO HTML — Escritorio</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+        html,body{height:100%;overflow:hidden;background:#fff}
+        *{-webkit-tap-highlight-color:transparent !important;user-select:none}
+
+        #fondo{position:fixed;inset:0;z-index:-1;background:#fff}
+
+        /* LÍNEAS DE CALIBRACIÓN — VISIBLES EN TIEMPO REAL */
+        #grid-lineas{position:absolute;inset:0;pointer-events:none;z-index:2;display:none}
+        #grid-lineas.mostrar{display:block}
+        .linea-col{position:absolute;top:0;bottom:0;width:1px;background:#007aff;opacity:0.7}
+        .linea-fila{position:absolute;left:0;right:0;height:1px;background:#007aff;opacity:0.7}
+
+        /* BORDES EXTERNOS */
+        #limites{position:fixed;inset:0;pointer-events:none;z-index:3;display:none}
+        #limites.mostrar{display:block}
+        .borde{position:absolute;background:#007aff;opacity:0.95}
+        #borde-sup{left:0;right:0;top:0;height:3px}
+        #borde-inf{left:0;right:0;bottom:0;height:3px}
+        #borde-izq{top:0;bottom:0;left:0;width:3px}
+        #borde-der{top:0;bottom:0;right:0;width:3px}
+
+        /* PANEL CALIBRACIÓN */
+        #panel-calib{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:360px;background:#fff;border-radius:16px;box-shadow:0 4px 30px rgba(0,0,0,0.25);padding:20px;z-index:100;display:none;flex-direction:column;gap:18px}
+        #panel-calib.mostrar{display:flex}
+        #panel-calib h2{font-size:18px;text-align:center;color:#111;margin-bottom:8px}
+        .fila{display:flex;align-items:center;gap:12px}
+        .fila label{width:100px;font-size:14px;color:#333;flex-shrink:0}
+        .fila input[type="range"]{flex:1;height:6px;-webkit-appearance:none;background:#ddd;border-radius:3px;outline:none;cursor:pointer}
+        .fila input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#007aff;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,0.2)}
+        .fila .valor{width:50px;text-align:right;font-size:14px;color:#007aff;font-weight:600}
+        .fila-num{display:flex;align-items:center;gap:12px;margin-top:4px}
+        .fila-num label{width:100px;font-size:14px;color:#333}
+        .fila-num input{width:70px;padding:6px;border:1px solid #ccc;border-radius:6px;text-align:center;font-size:15px;outline:none}
+        .btn-primario{background:#007aff;color:#fff;border:none;border-radius:10px;padding:13px;font-size:16px;font-weight:500;cursor:pointer;margin-top:8px;transition:opacity 0.1s}
+        .btn-primario:active{opacity:0.85}
+
+        /* ESCRITORIO */
+        #escritorio{position:fixed;display:grid;gap:0;z-index:10}
+        .celda{display:flex;align-items:center;justify-content:center;position:relative;border:1px solid transparent}
+        .celda.destacada{background:rgba(0,122,255,0.12);border-radius:6px}
+
+        /* ICONO — SIEMPRE MISMO TAMAÑO */
+        .app-icon{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;width:100%;height:100%;padding:4px;transform:none !important;scale:1 !important}
+        .app-icon:active{background:rgba(0,0,0,0.06);border-radius:10px}
+        .app-icon.moviendo{position:fixed;z-index:999;opacity:0.9;pointer-events:none;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,0.1);border-radius:10px;transform:none !important;scale:1 !important;width:auto !important;height:auto !important}
+        .app-icon .icon{font-size:32px;line-height:1;display:block}
+        .app-icon .nombre{font-size:11px;text-align:center;color:#111}
+    </style>
+</head>
+<body>
+
+<div id="fondo"></div>
+
+<!-- LÍNEAS DE CUADRÍCULA -->
+<div id="grid-lineas"></div>
+
+<!-- BORDES EXTERNOS -->
+<div id="limites">
+    <div class="borde" id="borde-sup"></div>
+    <div class="borde" id="borde-inf"></div>
+    <div class="borde" id="borde-izq"></div>
+    <div class="borde" id="borde-der"></div>
+</div>
+
+<!-- PANEL CALIBRACIÓN -->
+<div id="panel-calib">
+    <h2>📐 Calibración de Pantalla</h2>
+    <div class="fila">
+        <label>Margen Superior</label>
+        <input type="range" id="m-sup" min="0" max="150" value="16">
+        <span class="valor" id="v-sup">16px</span>
+    </div>
+    <div class="fila">
+        <label>Margen Inferior</label>
+        <input type="range" id="m-inf" min="0" max="150" value="16">
+        <span class="valor" id="v-inf">16px</span>
+    </div>
+    <div class="fila">
+        <label>Margen Izquierdo</label>
+        <input type="range" id="m-izq" min="0" max="150" value="16">
+        <span class="valor" id="v-izq">16px</span>
+    </div>
+    <div class="fila">
+        <label>Margen Derecho</label>
+        <input type="range" id="m-der" min="0" max="150" value="16">
+        <span class="valor" id="v-der">16px</span>
+    </div>
+    <div class="fila-num">
+        <label>Columnas</label>
+        <input type="number" id="cols" value="4" min="2" max="8">
+    </div>
+    <div class="fila-num">
+        <label>Filas</label>
+        <input type="number" id="filas" value="6" min="3" max="10">
+    </div>
+    <button class="btn-primario" onclick="aplicarCalib()">✅ Confirmar y Guardar</button>
+</div>
+
+<!-- ESCRITORIO -->
+<div id="escritorio"></div>
+
+<script>
+// CONFIGURACIÓN COMPARTIDA — se guarda en localStorage
+let config = {
+    calibrado: false,
+    mSup: 16, mInf: 16, mIzq: 16, mDer: 16,
+    cols: 4, filas: 6,
+    colorFondo: '#ffffff'
+};
+
+let orden = [];
+const APPS = [
+    {id:'ajustes', nombre:'Ajustes', icon:'⚙️', tipo:'enlace', url:'ajustes.html'},
+    {id:'tienda', nombre:'Tienda', icon:'🛒', tipo:'mensaje', texto:'Próximamente'}
+];
+
+// Estado de arrastre
+let moviendo = null;
+let idxOrigen = -1;
+let timerPresion = null;
+const TIEMPO_PRESION = 450;
+
+window.onload = () => {
+    cargarTodo();
+    if(!config.calibrado){
+        document.getElementById('panel-calib').classList.add('mostrar');
+        document.getElementById('limites').classList.add('mostrar');
+        dibujarTodoAlInstante();
+        vincularEventosTiempoReal();
+    }else{
+        iniciarEscritorio();
+    }
+};
+
+function cargarTodo(){
+    const c = localStorage.getItem('so_config');
+    if(c) config = {...config, ...JSON.parse(c)};
+    const o = localStorage.getItem('so_orden');
+    orden = o ? JSON.parse(o) : APPS.map(a=>a.id);
+    aplicarFondo();
+}
+
+function guardarConfig(){ localStorage.setItem('so_config', JSON.stringify(config)); }
+function guardarOrden(){ localStorage.setItem('so_orden', JSON.stringify(orden)); }
+
+// ✅ TODO EN TIEMPO REAL — dibuja bordes y líneas al instante
+function dibujarTodoAlInstante(){
+    // Actualizar valores visuales
+    document.getElementById('v-sup').textContent = config.mSup + 'px';
+    document.getElementById('v-inf').textContent = config.mInf + 'px';
+    document.getElementById('v-izq').textContent = config.mIzq + 'px';
+    document.getElementById('v-der').textContent = config.mDer + 'px';
+
+    // Actualizar posición de los BORDES EXTERNOS
+    document.getElementById('borde-sup').style.top = config.mSup + 'px';
+    document.getElementById('borde-inf').style.bottom = config.mInf + 'px';
+    document.getElementById('borde-izq').style.left = config.mIzq + 'px';
+    document.getElementById('borde-der').style.right = config.mDer + 'px';
+
+    // Actualizar COLUMNAS y FILAS en los inputs
+    document.getElementById('cols').value = config.cols;
+    document.getElementById('filas').value = config.filas;
+
+    // Dibujar LÍNEAS INTERNAS de cuadrícula
+    const cont = document.getElementById('grid-lineas');
+    cont.innerHTML = '';
+    const W = window.innerWidth - config.mIzq - config.mDer;
+    const H = window.innerHeight - config.mSup - config.mInf;
+    const gridLeft = config.mIzq;
+    const gridTop = config.mSup;
+
+    // Líneas verticales (columnas)
+    for(let i=1; i<config.cols; i++){
+        const l = document.createElement('div');
+        l.className = 'linea-col';
+        l.style.left = (gridLeft + (W/config.cols)*i) + 'px';
+        l.style.top = config.mSup + 'px';
+        l.style.bottom = config.mInf + 'px';
+        cont.appendChild(l);
+    }
+    // Líneas horizontales (filas)
+    for(let i=1; i<config.filas; i++){
+        const l = document.createElement('div');
+        l.className = 'linea-fila';
+        l.style.top = (gridTop + (H/config.filas)*i) + 'px';
+        l.style.left = config.mIzq + 'px';
+        l.style.right = config.mDer + 'px';
+        cont.appendChild(l);
+    }
+}
+
+// ✅ EVENTOS EN TIEMPO REAL
+function vincularEventosTiempoReal(){
+    document.getElementById('m-sup').addEventListener('input', e=>{ config.mSup = +e.target.value; dibujarTodoAlInstante(); });
+    document.getElementById('m-inf').addEventListener('input', e=>{ config.mInf = +e.target.value; dibujarTodoAlInstante(); });
+    document.getElementById('m-izq').addEventListener('input', e=>{ config.mIzq = +e.target.value; dibujarTodoAlInstante(); });
+    document.getElementById('m-der').addEventListener('input', e=>{ config.mDer = +e.target.value; dibujarTodoAlInstante(); });
+    document.getElementById('cols').addEventListener('input', e=>{ config.cols = +e.target.value; dibujarTodoAlInstante(); });
+    document.getElementById('filas').addEventListener('input', e=>{ config.filas = +e.target.value; dibujarTodoAlInstante(); });
+}
+
+function aplicarCalib(){
+    config.mSup = +document.getElementById('m-sup').value;
+    config.mInf = +document.getElementById('m-inf').value;
+    config.mIzq = +document.getElementById('m-izq').value;
+    config.mDer = +document.getElementById('m-der').value;
+    config.cols = +document.getElementById('cols').value;
+    config.filas = +document.getElementById('filas').value;
+    config.calibrado = true;
+    guardarConfig();
+    
+    document.getElementById('panel-calib').classList.remove('mostrar');
+    document.getElementById('limites').classList.remove('mostrar');
+    document.getElementById('grid-lineas').innerHTML = '';
+    iniciarEscritorio();
+}
+
+function iniciarEscritorio(){
+    const grid = document.getElementById('escritorio');
+    grid.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+    grid.style.gridTemplateRows = `repeat(${config.filas}, 1fr)`;
+    grid.style.padding = `${config.mSup}px ${config.mDer}px ${config.mInf}px ${config.mIzq}px`;
+    grid.style.inset = '0';
+    renderizarEscritorio();
+}
+
+function renderizarEscritorio(){
+    const grid = document.getElementById('escritorio');
+    grid.innerHTML = '';
+    const total = config.cols * config.filas;
+
+    for(let i=0; i<total; i++){
+        const celda = document.createElement('div');
+        celda.className = 'celda';
+        celda.dataset.i = i;
+
+        const idApp = orden[i];
+        if(idApp){
+            const app = APPS.find(a=>a.id === idApp);
+            const icono = document.createElement('div');
+            icono.className = 'app-icon';
+            icono.dataset.id = idApp;
+            icono.dataset.i = i;
+            icono.innerHTML = `<div class="icon">${app.icon}</div><div class="nombre">${app.nombre}</div>`;
+
+            // Arrastre con presión larga
+            icono.addEventListener('mousedown', e=>inicioPresion(e, icono, i));
+            icono.addEventListener('touchstart', e=>inicioPresion(e, icono, i), {passive:true});
+            
+            // Clic normal
+            icono.addEventListener('click', e=>{
+                if(moviendo) return;
+                e.stopPropagation();
+                if(app.tipo === 'enlace') window.location.href = app.url;
+                else if(app.tipo === 'mensaje') alert(app.texto);
+            });
+
+            celda.appendChild(icono);
+        }
+
+        celda.addEventListener('mouseenter', ()=>{ if(moviendo) celda.classList.add('destacada'); });
+        celda.addEventListener('mouseleave', ()=> celda.classList.remove('destacada'));
+        grid.appendChild(celda);
+    }
+
+    document.addEventListener('mousemove', arrastrandoIcono);
+    document.addEventListener('mouseup', soltarIcono);
+    document.addEventListener('touchmove', arrastrandoIcono, {passive:false});
+    document.addEventListener('touchend', soltarIcono);
+}
+
+function inicioPresion(e, icono, i){
+    idxOrigen = i;
+    timerPresion = setTimeout(()=>{
+        moviendo = icono;
+        icono.classList.add('moviendo');
+        const actualizar = (x,y) => {
+            icono.style.left = (x - 40) + 'px';
+            icono.style.top = (y - 50) + 'px';
+        };
+        if(e.touches) actualizar(e.touches[0].clientX, e.touches[0].clientY);
+        else actualizar(e.clientX, e.clientY);
+    }, TIEMPO_PRESION);
+
+    const cancelar = () => { clearTimeout(timerPresion); };
+    setTimeout(()=>{
+        document.addEventListener('mouseup', cancelar);
+        document.addEventListener('touchend', cancelar);
+    }, 0);
+}
+
+function arrastrandoIcono(e){
+    if(!moviendo) return;
+    e.preventDefault();
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    moviendo.style.left = (x - 40) + 'px';
+    moviendo.style.top = (y - 50) + 'px';
+}
+
+// ✅ ARREGLADO: AHORA SÍ SE QUEDA EN CELDA VACÍA, NO REGRESA
+function soltarIcono(e){
+    clearTimeout(timerPresion);
+    if(!moviendo) return;
+
+    const x = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
+    const y = e.changedTouches ? e.changedTouches[0].clientY : e.clientY;
+
+    const celdaDestino = document.elementFromPoint(x, y)?.closest('.celda');
+    const idxDestino = celdaDestino ? parseInt(celdaDestino.dataset.i) : -1;
+    const idMoviendo = moviendo.dataset.id;
+
+    // Limpiar estado visual
+    moviendo.classList.remove('moviendo');
+    moviendo.style.left = '';
+    moviendo.style.top = '';
+    moviendo = null;
+    document.querySelectorAll('.celda').forEach(c=>c.classList.remove('destacada'));
+
+    // Si suelta fuera de la cuadrícula → regresa sin cambios
+    if(idxDestino === -1) return;
+
+    // Si suelta en el mismo lugar → no hace nada
+    if(idxDestino === idxOrigen) return;
+
+    // 🔑 SOLUCIÓN PRINCIPAL: CUALQUIER celda es válida, tenga ícono o no
+    // Si la celda destino ESTÁ VACÍA → se mueve ahí, punto
+    if(!orden[idxDestino]){
+        // Quitar de origen
+        orden.splice(idxOrigen, 1);
+        // Poner en destino exacto
+        orden.splice(idxDestino, 0, idMoviendo);
+    } else {
+        // Si HAY ícono en destino → intercambiar
+        [orden[idxOrigen], orden[idxDestino]] = [orden[idxDestino], orden[idxOrigen]];
+    }
+
+    guardarOrden();
+    renderizarEscritorio();
+}
+
+function aplicarFondo(){
+    document.getElementById('fondo').style.background = config.colorFondo;
+    document.body.style.background = config.colorFondo;
+}
+</script>
+</body>
+</html>
