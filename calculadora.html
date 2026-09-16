@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>Calculadora</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        body {
+            background: #1a1a1a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .calculadora {
+            background: #2d2d2d;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            padding: 25px;
+            width: 100%;
+            max-width: 400px;
+        }
+        .pantalla {
+            background: #3a3a3a;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            padding: 25px 15px;
+            text-align: right;
+            word-wrap: break-word;
+            word-break: break-all;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        .operacion { color: #999; font-size: 1.3rem; min-height: 1.8rem; }
+        .resultado { color: #fff; font-size: 2.8rem; font-weight: 600; }
+        
+        .modo-top { text-align: center; margin-bottom: 15px; }
+        .btn-modo {
+            background: #2c4a6e; color: #fff; border: none;
+            border-radius: 12px; padding: 10px 20px; font-size: 1rem; cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-modo:hover { background: #365b88; }
+
+        .filas-cientificas { display: none; }
+        .cientifica .filas-cientificas { display: block; margin-bottom: 10px; }
+        .fila-func { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 10px; }
+
+        .botones { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+
+        button {
+            border: none; border-radius: 16px; font-size: 1.5rem;
+            padding: 22px; cursor: pointer; transition: all 0.15s ease; font-weight: 500;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        button:active { transform: scale(0.92); }
+        .numero { background: #444; color: #fff; }
+        .numero:hover { background: #555; }
+        .operador { background: #ff9500; color: #fff; }
+        .operador:hover { background: #ffaa33; }
+        .limpiar { background: #ff3b30; color: #fff; }
+        .limpiar:hover { background: #ff453a; }
+        .igual { background: #34c759; color: #fff; grid-row: span 2; }
+        .igual:hover { background: #30d158; }
+        .cero { grid-column: span 2; }
+        .func { background: #383838; color: #fff; font-size: 1rem; padding: 14px 8px; }
+        .func:hover { background: #484848; }
+        .const { background: #2c4a6e; color: #fff; font-size: 1rem; padding: 14px 8px; }
+        .const:hover { background: #365b88; }
+        .relleno { background: transparent; border: none; pointer-events: none; }
+
+        @media (max-width: 400px) {
+            button { padding: 18px; font-size: 1.3rem; }
+            .resultado { font-size: 2.2rem; }
+            .func, .const { font-size: 0.9rem; padding: 12px 6px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculadora" id="calc">
+        <div class="modo-top">
+            <button class="btn-modo" onclick="alternarModo()" id="etiquetaModo">🔬 Científica</button>
+        </div>
+
+        <div class="pantalla">
+            <div class="operacion" id="operacion"></div>
+            <div class="resultado" id="resultado">0</div>
+        </div>
+
+        <div class="filas-cientificas" id="bloqueCientifico">
+            <div class="fila-func">
+                <button class="func" onclick="agregar('sin(')">sin</button>
+                <button class="func" onclick="agregar('cos(')">cos</button>
+                <button class="func" onclick="agregar('tan(')">tan</button>
+                <button class="func" onclick="agregar('log(')">log</button>
+                <button class="func" onclick="agregar('ln(')">ln</button>
+            </div>
+            <div class="fila-func">
+                <button class="func" onclick="agregar('sqrt(')">√</button>
+                <button class="func" onclick="agregar('pow(,')">xʸ</button>
+                <button class="func" onclick="agregar('(')">(</button>
+                <button class="func" onclick="agregar(')')">)</button>
+                <button class="func" onclick="agregar('%')">%</button>
+            </div>
+            <div class="fila-func">
+                <button class="const" onclick="agregar('PI')">π</button>
+                <button class="const" onclick="agregar('E')">e</button>
+                <button class="relleno"></button>
+                <button class="relleno"></button>
+                <button class="relleno"></button>
+            </div>
+        </div>
+
+        <div class="botones">
+            <button class="limpiar" onclick="borrar()">C</button>
+            <button class="operador" onclick="agregar('/')">÷</button>
+            <button class="operador" onclick="agregar('*')">×</button>
+            <button class="operador" onclick="agregar('-')">−</button>
+
+            <button class="numero" onclick="agregar('7')">7</button>
+            <button class="numero" onclick="agregar('8')">8</button>
+            <button class="numero" onclick="agregar('9')">9</button>
+            <button class="operador" onclick="agregar('+')">+</button>
+
+            <button class="numero" onclick="agregar('4')">4</button>
+            <button class="numero" onclick="agregar('5')">5</button>
+            <button class="numero" onclick="agregar('6')">6</button>
+            <button class="igual" onclick="calcular()">=</button>
+
+            <button class="numero" onclick="agregar('1')">1</button>
+            <button class="numero" onclick="agregar('2')">2</button>
+            <button class="numero" onclick="agregar('3')">3</button>
+
+            <button class="numero cero" onclick="agregar('0')">0</button>
+            <button class="numero" onclick="agregar('.')">.</button>
+        </div>
+    </div>
+
+    <script>
+        const opPantalla = document.getElementById('operacion');
+        const resPantalla = document.getElementById('resultado');
+        const contenedor = document.getElementById('calc');
+        const etiquetaModo = document.getElementById('etiquetaModo');
+        const bloqueCientifico = document.getElementById('bloqueCientifico');
+        
+        let operacion = '';
+        let esCientifica = false;
+
+        function alternarModo() {
+            esCientifica = !esCientifica;
+            contenedor.classList.toggle('cientifica', esCientifica);
+            bloqueCientifico.style.display = esCientifica ? 'block' : 'none';
+            etiquetaModo.textContent = esCientifica ? '📱 Básica' : '🔬 Científica';
+        }
+
+        function agregar(caracter) {
+            if (operacion === '' && ['+', '-', '*', '/', '%', '.', ','].includes(caracter)) {
+                if (caracter === '-') operacion += caracter;
+                actualizar();
+                return;
+            }
+            const partes = operacion.split(/[+\-*/%(),]/);
+            const ultimo = partes[partes.length - 1];
+            if (caracter === '.' && ultimo.includes('.')) return;
+            operacion += caracter;
+            actualizar();
+        }
+
+        function borrar() {
+            operacion = operacion.slice(0, -1);
+            actualizar();
+        }
+
+        function actualizar() {
+            opPantalla.textContent = operacion;
+            // 🔴 ABAJO SIEMPRE MUESTRA 0 MIENTRAS ESCRIBES — NO CAMBIA
+            resPantalla.textContent = '0';
+        }
+
+        function calcular() {
+            if (!operacion) return;
+            try {
+                let codigo = operacion
+                    .replace(/sin\(/g, 'Math.sin(')
+                    .replace(/cos\(/g, 'Math.cos(')
+                    .replace(/tan\(/g, 'Math.tan(')
+                    .replace(/log\(/g, 'Math.log10(')
+                    .replace(/ln\(/g, 'Math.log(')
+                    .replace(/sqrt\(/g, 'Math.sqrt(')
+                    .replace(/pow\(/g, 'Math.pow(')
+                    .replace(/PI/g, 'Math.PI')
+                    .replace(/E/g, 'Math.E')
+                    .replace(/%/g, '/100');
+
+                let res = Function('"use strict"; return (' + codigo + ')')();
+                // ✅ SOLO AL DARLE = MUESTRA EL RESULTADO ABAJO
+                resPantalla.textContent = Number.isInteger(res) ? res : parseFloat(res.toPrecision(12));
+            } catch {
+                resPantalla.textContent = 'Error';
+            }
+        }
+
+        document.addEventListener('keydown', e => {
+            if ((e.key >= '0' && e.key <= '9') || '+-*/.()%,'.includes(e.key)) agregar(e.key);
+            else if (e.key === 'Enter' || e.key === '=') calcular();
+            else if (e.key === 'Backspace') borrar();
+        });
+    </script>
+</body>
+</html>
