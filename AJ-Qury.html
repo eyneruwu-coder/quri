@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ajustes</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif}
+        :root{--fondo:#ffffff;--secundario:#f2f2f7;--texto:#000000;--texto-secundario:#86868b;--acento:#007aff;--borde:#e5e5e7;--tarjeta:#ffffff;--sombra:rgba(0,0,0,0.08)}
+        .modo-oscuro{--fondo:#000000;--secundario:#1c1c1e;--texto:#ffffff;--texto-secundario:#86868b;--acento:#0a84ff;--borde:#38383a;--tarjeta:#1c1c1e;--sombra:rgba(0,0,0,0.3)}
+        html,body{height:100%;background:var(--fondo);color:var(--texto);overflow-x:hidden;transition:background 0.3s ease, color 0.3s ease}
+        *{-webkit-tap-highlight-color:transparent !important;user-select:none}
+
+        /* ============== BARRA SUPERIOR ============== */
+        .barra-superior{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--fondo);backdrop-filter:blur(20px);border-bottom:1px solid var(--borde)}
+        .boton-volver{display:flex;align-items:center;gap:4px;color:var(--acento);font-size:16px;font-weight:500;background:none;border:none;cursor:pointer;text-decoration:none}
+        .titulo-pagina{font-size:20px;font-weight:700;color:var(--texto)}
+
+        /* ============== BUSCADOR ============== */
+        .buscador{padding:12px 16px;margin-bottom:8px}
+        .buscador-input{width:100%;padding:12px 16px;border:none;border-radius:12px;background:var(--secundario);color:var(--texto);font-size:16px;outline:none}
+        .buscador-input::placeholder{color:var(--texto-secundario)}
+
+        /* ============== CONTENEDOR GENERAL ============== */
+        .contenedor{padding:0 16px;padding-bottom:40px}
+        .seccion{margin-bottom:36px}
+        .etiqueta-seccion{font-size:13px;color:var(--texto-secundario);text-transform:uppercase;margin-left:4px;margin-bottom:10px;letter-spacing:0.5px}
+
+        /* ============== TARJETAS PRINCIPALES ============== */
+        .fila-tarjetas{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:32px}
+        .tarjeta-principal{background:var(--tarjeta);border-radius:16px;padding:20px;box-shadow:0 2px 10px var(--sombra);cursor:pointer;transition:transform 0.2s ease, background 0.2s ease;border:1px solid var(--borde)}
+        .tarjeta-principal:active{transform:scale(0.97);background:var(--secundario)}
+        .tarjeta-icon{width:40px;height:40px;margin-bottom:12px;display:flex;align-items:center;justify-content:center}
+        .tarjeta-titulo{font-size:16px;font-weight:600;color:var(--texto);margin-bottom:4px}
+        .tarjeta-desc{font-size:13px;color:var(--texto-secundario)}
+
+        /* ============== GRUPO DE OPCIONES ============== */
+        .grupo-opciones{background:var(--tarjeta);border-radius:12px;overflow:hidden;border:1px solid var(--borde);margin-bottom:32px}
+        .opcion{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--borde);cursor:pointer;transition:background 0.2s ease}
+        .opcion:last-child{border-bottom:none}
+        .opcion:active{background:var(--secundario)}
+        .opcion-izq{display:flex;align-items:center;gap:12px}
+        .opcion-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+        .opcion-texto{font-size:16px;color:var(--texto)}
+        .opcion-der{display:flex;align-items:center;gap:8px}
+        .opcion-sub{font-size:14px;color:var(--texto-secundario)}
+        .flecha{color:var(--texto-secundario);font-size:14px}
+
+        /* ============== TEMA SOL / LUNA ============== */
+        .contenedor-tema{display:flex;align-items:center;gap:12px}
+        .caja-tema{display:flex;align-items:center;border:1px solid var(--borde);border-radius:8px;overflow:hidden;background:var(--secundario)}
+        .btn-tema{padding:8px 12px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s ease;border:none;background:transparent}
+        .btn-tema.activo{background:var(--acento);color:#fff}
+        .btn-tema:first-child{border-right:1px solid var(--borde)}
+
+        /* ============== MODALES ============== */
+        .modal-fondo{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+        .modal-fondo.mostrar{display:flex}
+        .modal{background:var(--tarjeta);border-radius:16px;width:100%;max-width:340px;padding:24px;box-shadow:0 4px 30px rgba(0,0,0,0.2)}
+        .modal-titulo{font-size:18px;font-weight:600;color:var(--texto);margin-bottom:20px;text-align:center}
+        .modal-input{width:100%;padding:12px;border:1px solid var(--borde);border-radius:8px;font-size:16px;margin-bottom:16px;background:var(--secundario);color:var(--texto);outline:none}
+        .modal-botones{display:flex;gap:12px;margin-top:8px}
+        .modal-btn{flex:1;padding:12px;border-radius:10px;border:none;font-size:16px;font-weight:500;cursor:pointer;transition:opacity 0.2s}
+        .modal-btn:active{opacity:0.8}
+        .modal-btn.secundario{background:var(--secundario);color:var(--texto)}
+        .modal-btn.primario{background:var(--acento);color:#fff}
+        .color-opciones{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+        .color-btn{width:44px;height:44px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform 0.2s}
+        .color-btn:active{transform:scale(0.9)}
+        .color-btn.seleccionado{border-color:var(--texto)}
+
+        /* ============== OCULTAR POR BUSQUEDA ============== */
+        .oculto-por-busqueda{display:none !important}
+    </style>
+</head>
+<body>
+
+<!-- Barra Superior -->
+<div class="barra-superior">
+    <a href="index.html" class="boton-volver">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 19l-7-7 7-7"></path></svg>
+        Ajustes
+    </a>
+    <div class="titulo-pagina"></div>
+</div>
+
+<!-- Buscador -->
+<div class="buscador">
+    <input type="text" class="buscador-input" id="buscador" placeholder="Buscar ajustes">
+</div>
+
+<div class="contenedor">
+    <!-- Tarjetas Principales -->
+    <div class="fila-tarjetas">
+        <div class="tarjeta-principal" id="tarjeta-seguridad" data-busqueda="seguridad,seguridad,contraseña,código,bloqueo,bloquear">
+            <div class="tarjeta-icon">
+                <!-- Escudo SVG Elegante -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--acento)" stroke-width="1.5">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M9 12l2 2 4-4"></path>
+                </svg>
+            </div>
+            <div class="tarjeta-titulo">Seguridad</div>
+            <div class="tarjeta-desc">Bloqueo y acceso</div>
+        </div>
+
+        <div class="tarjeta-principal" id="tarjeta-pantalla" data-busqueda="pantalla,calibrar,calibración,fondo,pantalla,tema,claro,oscuro,brillo">
+            <div class="tarjeta-icon">
+                <!-- Pantalla SVG -->
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--acento)" stroke-width="1.5">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+            </div>
+            <div class="tarjeta-titulo">Pantalla</div>
+            <div class="tarjeta-desc">Calibración y fondo</div>
+        </div>
+    </div>
+
+    <!-- Sección Aplicaciones -->
+    <div class="etiqueta-seccion">Aplicaciones</div>
+    <div class="grupo-opciones" id="lista-aplicaciones" data-busqueda="aplicaciones,apps,instaladas,desinstalar,borrar,datos">
+        <!-- Se llena dinámicamente desde localStorage -->
+    </div>
+
+    <!-- Sección Acerca del Sistema -->
+    <div class="etiqueta-seccion">Acerca del sistema</div>
+    <div class="grupo-opciones" data-busqueda="acerca,sistema,versión,info,detalles">
+        <div class="opcion">
+            <div class="opcion-izq">
+                <div class="opcion-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--acento)" stroke-width="1.5">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 16v-4M12 8h.01"></path>
+                    </svg>
+                </div>
+                <span class="opcion-texto">Información del sistema</span>
+            </div>
+            <span class="flecha">›</span>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Seguridad -->
+<div class="modal-fondo" id="modal-seguridad">
+    <div class="modal">
+        <div class="modal-titulo">🔒 Seguridad</div>
+        <div class="grupo-opciones" style="margin-bottom:20px;border:1px solid var(--borde);border-radius:12px;overflow:hidden">
+            <div class="opcion" id="opc-bloqueo-pantalla" style="border-bottom:1px solid var(--borde)">
+                <div class="opcion-izq"><span class="opcion-texto">Bloqueo de pantalla</span></div>
+                <span class="opcion-sub" id="estado-bloqueo-pant">Sin código</span>
+            </div>
+            <div class="opcion" id="opc-bloqueo-apps">
+                <div class="opcion-izq"><span class="opcion-texto">Bloqueo de aplicaciones</span></div>
+                <span class="flecha">›</span>
+            </div>
+        </div>
+        <div class="modal-botones">
+            <button class="modal-btn secundario" onclick="cerrarModal('modal-seguridad')">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Pantalla -->
+<div class="modal-fondo" id="modal-pantalla">
+    <div class="modal" style="max-height:85vh;overflow-y:auto">
+        <div class="modal-titulo">📱 Pantalla y Fondo</div>
+        
+        <!-- TEMA: Sol y Luna -->
+        <div style="margin-bottom:20px">
+            <div style="font-size:14px;color:var(--texto-secundario);margin-bottom:10px">Tema</div>
+            <div class="contenedor-tema">
+                <div class="caja-tema">
+                    <button class="btn-tema" id="btn-claro" onclick="aplicarTema('claro')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-tema" id="btn-oscuro" onclick="aplicarTema('oscuro')">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <span style="font-size:14px;color:var(--texto-secundario)">Tema claro / oscuro</span>
+            </div>
+        </div>
+
+        <!-- Recalibración -->
+        <div class="opcion" style="border:1px solid var(--borde);border-radius:10px;margin-bottom:16px" onclick="abrirCalibracion()">
+            <div class="opcion-izq">
+                <span class="opcion-texto">📐 Recalibrar pantalla</span>
+            </div>
+            <span class="flecha">›</span>
+        </div>
+
+        <!-- Fondo Color -->
+        <div style="margin-bottom:16px">
+            <div style="font-size:14px;color:var(--texto-secundario);margin-bottom:10px">Color de fondo</div>
+            <div class="color-opciones">
+                <button class="color-btn" style="background:#ffffff" onclick="cambiarColorFondo('#ffffff')"></button>
+                <button class="color-btn" style="background:#f2f2f7" onclick="cambiarColorFondo('#f2f2f7')"></button>
+                <button class="color-btn" style="background:#007aff" onclick="cambiarColorFondo('#007aff')"></button>
+                <button class="color-btn" style="background:#34c759" onclick="cambiarColorFondo('#34c759')"></button>
+                <button class="color-btn" style="background:#ff9500" onclick="cambiarColorFondo('#ff9500')"></button>
+                <button class="color-btn" style="background:#ff3b30" onclick="cambiarColorFondo('#ff3b30')"></button>
+                <button class="color-btn" style="background:#af52de" onclick="cambiarColorFondo('#af52de')"></button>
+                <button class="color-btn" style="background:#000000" onclick="cambiarColorFondo('#000000')"></button>
+                <button class="color-btn" style="background:#1c1c1e" onclick="cambiarColorFondo('#1c1c1e')"></button>
+                <button class="color-btn" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%)" onclick="cambiarColorFondo('linear-gradient(135deg,#667eea 0%,#764ba2 100%)')"></button>
+            </div>
+        </div>
+
+        <!-- Fondo Imagen/GIF -->
+        <div style="margin-bottom:20px">
+            <div style="font-size:14px;color:var(--texto-secundario);margin-bottom:10px">Imagen o GIF de fondo</div>
+            <input type="text" class="modal-input" id="ruta-imagen" placeholder="Pega la ruta de la imagen/GIF">
+            <button class="modal-btn primario" style="width:100%;margin-bottom:10px" onclick="cambiarFondoImagen()">Establecer imagen</button>
+            <button class="modal-btn secundario" style="width:100%" onclick="quitarFondoImagen()">Quitar imagen</button>
+        </div>
+
+        <div class="modal-botones">
+            <button class="modal-btn primario" onclick="cerrarModal('modal-pantalla')">Listo</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================================================
+// 🔗 CONEXIÓN CON EL SISTEMA — MISMO localStorage
+// ==================================================
+function esImagen(valor){
+    return valor.startsWith('http://') || valor.startsWith('https://') || valor.startsWith('/') || valor.includes('.jpg') || valor.includes('.png') || valor.includes('.webp') || valor.includes('.gif');
+}
+
+let config = { tema:'claro', colorFondo:'#ffffff', fondoImagen:null, codigoBloqueo:null, appsBloqueadas:[] };
+
+// Cargar configuración al iniciar
+window.onload = () => {
+    const c = localStorage.getItem('so_config');
+    if(c) config = {...config, ...JSON.parse(c)};
+    
+    // Aplicar tema guardado
+    if(config.tema === 'oscuro') document.body.classList.add('modo-oscuro');
+    actualizarBotonesTema();
+    
+    // Renderizar lista de aplicaciones instaladas
+    renderizarAplicaciones();
+    
+    // Iniciar buscador
+    document.getElementById('buscador').addEventListener('input', filtrarAjustes);
+    
+    // Eventos tarjetas
+    document.getElementById('tarjeta-seguridad').addEventListener('click', ()=>abrirModal('modal-seguridad'));
+    document.getElementById('tarjeta-pantalla').addEventListener('click', ()=>abrirModal('modal-pantalla'));
+    
+    // Actualizar estado de bloqueo
+    actualizarEstadoBloqueo();
+};
+
+// ==================================================
+// 🔍 BUSCADOR — Insensible a mayúsculas/minúsculas
+// ==================================================
+function filtrarAjustes(e){
+    const texto = e.target.value.toLowerCase().trim();
+    const tarjetas = document.querySelectorAll('.tarjeta-principal');
+    const secciones = document.querySelectorAll('.grupo-opciones, .etiqueta-seccion');
+    
+    tarjetas.forEach(tarjeta => {
+        const palabras = tarjeta.dataset.busqueda || '';
+        const coincide = texto === '' || palabras.toLowerCase().includes(texto);
+        tarjeta.classList.toggle('oculto-por-busqueda', !coincide);
+    });
+    
+    secciones.forEach(seccion => {
+        const palabras = seccion.dataset.busqueda || '';
+        const coincide = texto === '' || palabras.toLowerCase().includes(texto);
+        seccion.classList.toggle('oculto-por-busqueda', !coincide);
+    });
+}
+
+// ==================================================
+// 🎨 TEMA CLARO / OSCURO — Sol y Luna
+// ==================================================
+function aplicarTema(tipo){
+    config.tema = tipo;
+    if(tipo === 'oscuro'){
+        document.body.classList.add('modo-oscuro');
+    }else{
+        document.body.classList.remove('modo-oscuro');
+    }
+    guardarConfig();
+    actualizarBotonesTema();
+}
+
+function actualizarBotonesTema(){
+    document.getElementById('btn-claro').classList.toggle('activo', config.tema === 'claro');
+    document.getElementById('btn-oscuro').classList.toggle('activo', config.tema === 'oscuro');
+}
+
+// ==================================================
+// 📐 FONDO DE PANTALLA — Color + Imagen/GIF
+// ==================================================
+function cambiarColorFondo(color){
+    config.colorFondo = color;
+    config.fondoImagen = null; // Si pones color, quita imagen
+    guardarConfig();
+}
+
+function cambiarFondoImagen(){
+    const ruta = document.getElementById('ruta-imagen').value.trim();
+    if(ruta){
+        config.fondoImagen = ruta;
+        guardarConfig();
+        alert('Imagen establecida ✅\nSe verá al volver al Escritorio');
+    }
+}
+
+function quitarFondoImagen(){
+    config.fondoImagen = null;
+    document.getElementById('ruta-imagen').value = '';
+    guardarConfig();
+}
+
+function abrirCalibracion(){
+    // Guarda y abre el Escritorio con calibración activa
+    localStorage.setItem('so_calibrar_pantalla', 'pendiente');
+    window.location.href = 'index.html';
+}
+
+// ==================================================
+// 📦 APLICACIONES — Sincronizadas con Tienda
+// ==================================================
+function renderizarAplicaciones(){
+    const contenedor = document.getElementById('lista-aplicaciones');
+    const appsNuevas = JSON.parse(localStorage.getItem('so_apps_nuevas') || '{}');
+    const orden = JSON.parse(localStorage.getItem('so_orden') || '["ajustes","tienda"]');
+    
+    // Filtrar solo apps instaladas (no las base)
+    const listaApps = [];
+    orden.forEach(id => {
+        if(id && appsNuevas[id]){
+            listaApps.push({id, ...appsNuevas[id]});
+        }
+    });
+    
+    if(listaApps.length === 0){
+        contenedor.innerHTML = `<div style="padding:20px;text-align:center;color:var(--texto-secundario)">No hay aplicaciones instaladas</div>`;
+        return;
+    }
+    
+    contenedor.innerHTML = listaApps.map(app => {
+        const iconContent = esImagen(app.icono) 
+            ? `<img src="${app.icono}" style="width:22px;height:22px;border-radius:5px;object-fit:cover">` 
+            : `<span style="font-size:20px">${app.icono}</span>`;
+        
+        return `
+            <div class="opcion" style="border-bottom:1px solid var(--borde)">
+                <div class="opcion-izq">
+                    <div class="opcion-icon">${iconContent}</div>
+                    <span class="opcion-texto">${app.nombre}</span>
+                </div>
+                <div class="opcion-der">
+                    <button style="background:none;border:none;color:var(--acento);font-size:18px;cursor:pointer" title="Borrar datos" onclick="borrarDatosApp('${app.id}')">⚙️</button>
+                    <button style="background:none;border:none;color:#ff3b30;font-size:18px;cursor:pointer;margin-left:12px" title="Desinstalar" onclick="desinstalarApp('${app.id}')">🗑️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function borrarDatosApp(idApp){
+    if(confirm('¿Borrar los datos de esta aplicación?\nSe restablecerá su configuración.')){
+        // Borra los datos específicos de la app
+        localStorage.removeItem(`app_${idApp}_datos`);
+        localStorage.removeItem(`app_${idApp}_config`);
+        alert('Datos borrados ✅');
+    }
+}
+
+function desinstalarApp(idApp){
+    if(confirm('¿Desinstalar esta aplicación?\nSe eliminará del sistema.')){
+        // 1. Borrar de apps instaladas
+        const appsNuevas = JSON.parse(localStorage.getItem('so_apps_nuevas') || '{}');
+        delete appsNuevas[idApp];
+        localStorage.setItem('so_apps_nuevas', JSON.stringify(appsNuevas));
+        
+        // 2. Quitar del orden
+        let orden = JSON.parse(localStorage.getItem('so_orden') || '[]');
+        orden = orden.filter(id => id !== idApp);
+        localStorage.setItem('so_orden', JSON.stringify(orden));
+        
+        // 3. Borrar datos residuales
+        localStorage.removeItem(`app_${idApp}_datos`);
+        localStorage.removeItem(`app_${idApp}_config`);
+        
+        // 4. Refrescar lista
+        renderizarAplicaciones();
+        alert('Aplicación desinstalada ✅');
+    }
+}
+
+// ==================================================
+// 🔒 SEGURIDAD — Bloqueo de pantalla y apps
+// ==================================================
+function actualizarEstadoBloqueo(){
+    const estado = document.getElementById('estado-bloqueo-pant');
+    estado.textContent = config.codigoBloqueo ? 'Código activo' : 'Sin código';
+}
+
+document.getElementById('opc-bloqueo-pantalla').addEventListener('click', () => {
+    const accion = config.codigoBloqueo 
+        ? prompt('Escribe: 1 = Cambiar código | 2 = Eliminar código')
+        : '1';
+    
+    if(accion === '1' || accion === 'cambiar'){
+        const nuevoCod = prompt('Escribe el nuevo código (4-6 dígitos):');
+        if(nuevoCod && nuevoCod.length >= 4){
+            config.codigoBloqueo = nuevoCod;
+            guardarConfig();
+            actualizarEstadoBloqueo();
+            alert('Código establecido ✅');
+        }
+    }else if(accion === '2' || accion === 'eliminar'){
+        config.codigoBloqueo = null;
+        guardarConfig();
+        actualizarEstadoBloqueo();
+        alert('Código eliminado ✅');
+    }
+});
+
+document.getElementById('opc-bloqueo-apps').addEventListener('click', () => {
+    alert('Funcionalidad de bloqueo por aplicaciones:\n\nSelecciona qué apps quieres proteger con el código.\n(Se conecta al abrir cada app)');
+});
+
+// ==================================================
+// 🛠️ UTILIDADES
+// ==================================================
+function guardarConfig(){
+    localStorage.setItem('so_config', JSON.stringify(config));
+}
+
+function abrirModal(id){
+    document.getElementById(id).classList.add('mostrar');
+}
+
+function cerrarModal(id){
+    document.getElementById(id).classList.remove('mostrar');
+}
+
+// Cerrar modales al tocar fuera
+document.querySelectorAll('.modal-fondo').forEach(modal => {
+    modal.addEventListener('click', e => {
+        if(e.target === modal) modal.classList.remove('mostrar');
+    });
+});
+</script>
+
+</body>
+</html>
