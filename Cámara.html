@@ -5,14 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="format-detection" content="telephone=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Cámara Pro</title>
     <style>
-        /* ELIMINACIÓN TOTAL DE RESALTADOS Y SELECCIÓN */
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            margin: 0; padding: 0; box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             -webkit-tap-highlight-color: transparent;
             -webkit-touch-callout: none;
@@ -20,291 +16,159 @@
             user-select: none;
             outline: none !important;
         }
-        html, body {
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-            color: #fff;
-        }
+        html, body { height: 100%; overflow: hidden; background: #000; color: #fff; }
 
-        /* Contenedor principal */
-        .camara-app {
-            width: 100%;
-            height: 100vh;
-            position: relative;
-            background: #000;
+        /* Pestañas: Cámara / Galería */
+        .pestanas {
+            position: absolute; top: 0; left: 0; width: 100%; z-index: 20;
+            display: flex; justify-content: center; gap: 30px; padding: 12px 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
         }
+        .pestana {
+            font-size: 15px; color: #888; cursor: pointer; padding: 4px 12px;
+            transition: all 0.2s;
+        }
+        .pestana.activa { color: #fff; font-weight: 600; border-bottom: 2px solid #fff; }
 
-        /* Área de video — pantalla completa */
-        .vista-camara {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            overflow: hidden;
-        }
-        #video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(1);
-            transition: transform 0.3s ease;
-            border: none;
-        }
+        /* Contenedor de vistas */
+        .vista { position: absolute; top: 50px; left: 0; width: 100%; height: calc(100% - 50px); }
+        .vista.oculta { display: none !important; }
+
+        /* CÁMARA */
+        .vista-camara { position: relative; width: 100%; height: 100%; background: #000; overflow: hidden; }
+        #video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(1); transition: transform 0.3s ease; }
         #video.espejo { transform: scaleX(-1); }
         #canvas { display: none; }
 
-        /* Barra superior */
         .barra-superior {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 12px 20px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            position: absolute; top: 0; left: 0; width: 100%; padding: 12px 20px;
+            display: flex; justify-content: space-between; align-items: center;
             z-index: 10;
         }
-        .modos {
-            display: flex;
-            gap: 18px;
-            font-size: 14px;
-            color: #aaa;
-        }
-        .modo {
-            cursor: pointer;
-            padding: 4px 8px;
-            transition: all 0.2s;
-        }
-        .modo.activo {
-            color: #fff;
-            font-weight: 600;
-            border-bottom: 2px solid #fff;
-        }
-        .icono-superior {
-            cursor: pointer;
-            opacity: 0.8;
-            transition: opacity 0.2s, fill 0.2s;
-            width: 24px;
-            height: 24px;
-        }
-        .icono-superior:hover, .icono-superior:active {
-            opacity: 1;
-        }
+        .modos { display: flex; gap: 18px; font-size: 14px; color: #aaa; }
+        .modo { cursor: pointer; padding: 4px 8px; transition: all 0.2s; }
+        .modo.activo { color: #fff; font-weight: 600; border-bottom: 2px solid #fff; }
+        .icono-superior { cursor: pointer; opacity: 0.8; transition: opacity 0.2s; width: 24px; height: 24px; }
+        .icono-superior:hover, .icono-superior:active { opacity: 1; }
 
-        /* Tiempo grabación */
         .tiempo-grab {
-            position: absolute;
-            top: 18px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.6);
-            padding: 6px 14px;
-            border-radius: 20px;
-            color: #ff3b30;
-            font-weight: 600;
-            font-size: 14px;
-            display: none;
-            z-index: 10;
+            position: absolute; top: 18px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.6); padding: 6px 14px; border-radius: 20px;
+            color: #ff3b30; font-weight: 600; font-size: 14px; display: none; z-index: 10;
         }
-        .tiempo-grab.activo {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .punto-grab {
-            width: 8px;
-            height: 8px;
-            background: #ff3b30;
-            border-radius: 50%;
-            animation: parpadeo 1s infinite;
-        }
-        @keyframes parpadeo {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+        .tiempo-grab.activo { display: flex; align-items: center; gap: 6px; }
+        .punto-grab { width: 8px; height: 8px; background: #ff3b30; border-radius: 50%; animation: parpadeo 1s infinite; }
+        @keyframes parpadeo { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-        /* Enfoque */
         .marco-enfoque {
-            position: absolute;
-            width: 70px;
-            height: 70px;
-            border: 2px solid #ffeb3b;
-            border-radius: 6px;
-            pointer-events: none;
-            opacity: 0;
-            transform: translate(-50%, -50%);
-            transition: opacity 0.2s;
+            position: absolute; width: 70px; height: 70px; border: 2px solid #ffeb3b;
+            border-radius: 6px; pointer-events: none; opacity: 0;
+            transform: translate(-50%, -50%); transition: opacity 0.2s;
         }
-        .marco-enfoque.visible {
-            opacity: 1;
-            animation: pulso 1s ease-out forwards;
-        }
-        @keyframes pulso {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
-        }
+        .marco-enfoque.visible { opacity: 1; animation: pulso 1s ease-out forwards; }
+        @keyframes pulso { 0%{opacity:1;transform:translate(-50%,-50%)scale(1)} 100%{opacity:0;transform:translate(-50%,-50%)scale(1.2)} }
 
-        /* Aviso */
         .aviso {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.75);
-            padding: 20px 28px;
-            border-radius: 12px;
-            font-size: 15px;
-            text-align: center;
-            z-index: 5;
-            max-width: 85%;
-            line-height: 1.5;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.75); padding: 20px 28px; border-radius: 12px;
+            font-size: 15px; text-align: center; z-index: 5; max-width: 85%; line-height: 1.5;
         }
         .oculto { display: none !important; }
 
-        /* Vista previa flotante */
         .vista-previa-flotante {
-            position: absolute;
-            top: 60px;
-            right: 15px;
-            width: 120px;
-            height: 160px;
-            border-radius: 8px;
-            border: 2px solid #fff;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            z-index: 8;
-            display: none;
+            position: absolute; top: 60px; right: 15px; width: 120px; height: 160px;
+            border-radius: 8px; border: 2px solid #fff; overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5); z-index: 8; display: none;
         }
-        .vista-previa-flotante img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            pointer-events: none;
-        }
-        .vista-previa-flotante.mostrar {
-            display: block;
-            animation: entra 0.3s ease;
-        }
-        @keyframes entra {
-            from { opacity: 0; transform: scale(0.8); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        .vista-previa-flotante img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .vista-previa-flotante.mostrar { display: block; animation: entra 0.3s ease; }
+        @keyframes entra { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
 
-        /* Barra inferior */
         .barra-inferior {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 25px 0 35px;
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 25px 0 35px;
             background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            z-index: 10;
+            display: flex; align-items: center; justify-content: space-around; z-index: 10;
         }
         .boton-galeria {
-            width: 44px;
-            height: 44px;
-            border-radius: 6px;
-            background: #333;
-            border: 2px solid #555;
-            overflow: hidden;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.1s ease;
+            width: 44px; height: 44px; border-radius: 6px; background: #333;
+            border: 2px solid #555; overflow: hidden; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: transform 0.1s ease;
         }
-        .boton-galeria:active {
-            transform: scale(0.92);
-        }
-        .boton-galeria img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-            pointer-events: none;
-        }
-        .icono-galeria {
-            width: 22px;
-            height: 22px;
-            opacity: 0.6;
-            pointer-events: none;
-        }
+        .boton-galeria:active { transform: scale(0.92); }
+        .boton-galeria img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .icono-galeria { width: 22px; height: 22px; opacity: 0.6; pointer-events: none; }
 
         .boton-disparo {
-            width: 72px;
-            height: 72px;
-            border-radius: 50%;
-            background: transparent;
-            border: 4px solid #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.15s ease;
+            width: 72px; height: 72px; border-radius: 50%; background: transparent;
+            border: 4px solid #fff; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.15s ease;
         }
-        .boton-disparo:active {
-            transform: scale(0.88);
-        }
-        .anillo-interno {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            background: #fff;
-            transition: all 0.2s ease;
-        }
-        .boton-disparo.grabando .anillo-interno {
-            background: #ff3b30;
-            border-radius: 12px;
-            width: 32px;
-            height: 32px;
-        }
+        .boton-disparo:active { transform: scale(0.88); }
+        .anillo-interno { width: 58px; height: 58px; border-radius: 50%; background: #fff; transition: all 0.2s ease; }
+        .boton-disparo.grabando .anillo-interno { background: #ff3b30; border-radius: 12px; width: 32px; height: 32px; }
 
         .boton-cambiar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            border: none;
-            cursor: pointer;
-            transition: transform 0.1s ease, background 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.15);
+            border: none; cursor: pointer; transition: transform 0.1s ease, background 0.2s ease;
+            display: flex; align-items: center; justify-content: center;
         }
-        .boton-cambiar:hover {
-            background: rgba(255,255,255,0.25);
+        .boton-cambiar:hover { background: rgba(255,255,255,0.25); }
+        .boton-cambiar:active { transform: scale(0.92); background: rgba(255,255,255,0.2); }
+        .icono-camara { width: 22px; height: 22px; fill: #fff; pointer-events: none; }
+
+        /* GALERÍA */
+        .vista-galeria { width: 100%; height: 100%; overflow-y: auto; background: #000; padding: 10px; }
+        .galeria-vacia { text-align: center; padding: 60px 20px; color: #666; }
+        .cuadricula { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+        .foto-item { aspect-ratio: 1; overflow: hidden; border-radius: 4px; cursor: pointer; position: relative; }
+        .foto-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
+        .foto-item:active img { transform: scale(1.05); }
+        .foto-item .fecha {
+            position: absolute; bottom: 0; left: 0; width: 100%; padding: 4px; font-size: 10px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: #ccc;
         }
-        .boton-cambiar:active {
-            transform: scale(0.92);
-            background: rgba(255,255,255,0.2);
+        .acciones-foto {
+            position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; opacity: 0;
+            transition: opacity 0.2s;
         }
-        .icono-camara {
-            width: 22px;
-            height: 22px;
-            fill: #fff;
-            pointer-events: none;
+        .foto-item:hover .acciones-foto, .foto-item:active .acciones-foto { opacity: 1; }
+        .btn-accion {
+            width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.6); border: none;
+            color: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
+        .btn-descargar { background: rgba(33,150,243,0.7); }
+        .btn-borrar { background: rgba(244,67,54,0.7); }
+
+        /* Foto ampliada */
+        .visor {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+            z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
+        }
+        .visor.activo { display: flex; }
+        .visor img { max-width: 100%; max-height: 75%; border-radius: 8px; }
+        .visor-botones { display: flex; gap: 15px; margin-top: 20px; }
+        .visor-btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 15px; }
+        .visor-btn.cerrar { background: #444; color: #fff; }
+        .visor-btn.guardar { background: #2196F3; color: #fff; }
+        .visor-btn.eliminar { background: #f44336; color: #fff; }
     </style>
 </head>
 <body>
 
-<div class="camara-app">
-    <!-- Área de cámara -->
+<!-- Pestañas -->
+<div class="pestanas">
+    <span class="pestana activa" data-vista="camara">CÁMARA</span>
+    <span class="pestana" data-vista="galeria">GALERÍA</span>
+</div>
+
+<!-- VISTA CÁMARA -->
+<div class="vista" id="vistaCamara">
     <div class="vista-camara" id="areaCamara">
         <video id="video" autoplay playsinline muted></video>
         <canvas id="canvas"></canvas>
         <div class="marco-enfoque" id="marcoEnfoque"></div>
     </div>
 
-    <!-- Barra superior -->
     <div class="barra-superior">
         <div class="modos">
             <span class="modo" data-modo="video">VÍDEO</span>
@@ -316,24 +180,20 @@
         </svg>
     </div>
 
-    <!-- Tiempo grabación -->
     <div class="tiempo-grab" id="tiempoGrab">
         <span class="punto-grab"></span>
         <span id="textoTiempo">00:00</span>
     </div>
 
-    <!-- Vista previa flotante -->
     <div class="vista-previa-flotante" id="vistaPrevia">
         <img id="imgPrevia" alt="Vista previa">
     </div>
 
-    <!-- Aviso -->
     <div class="aviso" id="aviso">
         Solicitando permiso para acceder a la cámara...<br>
         <small style="opacity:0.7">Acepta para usar la cámara</small>
     </div>
 
-    <!-- Barra inferior -->
     <div class="barra-inferior">
         <div class="boton-galeria" id="botonGaleria">
             <svg class="icono-galeria" viewBox="0 0 24 24" fill="#fff" id="iconoGaleriaVacio">
@@ -354,13 +214,71 @@
     </div>
 </div>
 
+<!-- VISTA GALERÍA -->
+<div class="vista oculta" id="vistaGaleria">
+    <div class="vista-galeria">
+        <div class="galeria-vacia oculto" id="galeriaVacia">
+            📷<br><br>
+            No hay fotos todavía<br>
+            Toma una desde la pestaña Cámara
+        </div>
+        <div class="cuadricula" id="cuadriculaFotos"></div>
+    </div>
+</div>
+
+<!-- VISOR AMPLIADO -->
+<div class="visor" id="visor">
+    <img id="imgVisor" alt="Foto ampliada">
+    <div class="visor-botones">
+        <button class="visor-btn cerrar" id="btnCerrarVisor">Cerrar</button>
+        <button class="visor-btn guardar" id="btnDescargarVisor">💾 Guardar</button>
+        <button class="visor-btn eliminar" id="btnEliminarVisor">🗑️ Eliminar</button>
+    </div>
+</div>
+
 <script>
+// ================= INDEXEDDB =================
+const db = indexedDB.open('CamaraProDB', 1);
+let baseDatos = null;
+
+db.onupgradeneeded = e => {
+    const bd = e.target.result;
+    if (!bd.objectStoreNames.contains('fotos')) {
+        const almacen = bd.createObjectStore('fotos', { keyPath: 'id', autoIncrement: true });
+        almacen.createIndex('fecha', 'fecha', { unique: false });
+    }
+};
+
+db.onsuccess = e => {
+    baseDatos = e.target.result;
+    cargarGaleria();
+};
+
+db.onerror = e => console.error('Error BD:', e);
+
+function guardarEnBD(datosImagen) {
+    const transaccion = baseDatos.transaction(['fotos'], 'readwrite');
+    const almacen = transaccion.objectStore('fotos');
+    almacen.add({ imagen: datosImagen, fecha: new Date().toISOString() });
+    transaccion.oncomplete = () => cargarGaleria();
+}
+
+function obtenerTodas(callback) {
+    const solicitud = baseDatos.transaction('fotos').objectStore('fotos').getAll();
+    solicitud.onsuccess = e => callback(e.target.result);
+}
+
+function eliminarDeBD(id) {
+    baseDatos.transaction(['fotos'], 'readwrite').objectStore('fotos').delete(id);
+    cargarGaleria();
+}
+
+// ================= CÁMARA =================
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const botonDisparo = document.getElementById('botonDisparo');
 const botonCambiar = document.getElementById('botonCambiar');
-const botonGaleria = document.getElementById('botonGaleria');
 const aviso = document.getElementById('aviso');
 const marcoEnfoque = document.getElementById('marcoEnfoque');
 const vistaPrevia = document.getElementById('vistaPrevia');
@@ -371,6 +289,14 @@ const tiempoGrab = document.getElementById('tiempoGrab');
 const textoTiempo = document.getElementById('textoTiempo');
 const iconoFlash = document.getElementById('iconoFlash');
 const areaCamara = document.getElementById('areaCamara');
+const pestanas = document.querySelectorAll('.pestana');
+const vistaCamara = document.getElementById('vistaCamara');
+const vistaGaleria = document.getElementById('vistaGaleria');
+const cuadriculaFotos = document.getElementById('cuadriculaFotos');
+const galeriaVacia = document.getElementById('galeriaVacia');
+const visor = document.getElementById('visor');
+const imgVisor = document.getElementById('imgVisor');
+let fotoActivaId = null;
 
 let transmision = null;
 let modoActual = 'foto';
@@ -380,49 +306,44 @@ let mediaRecorder = null;
 let datosVideo = [];
 let tiempoInicio = null;
 let intervaloTiempo = null;
-let ultimaImagen = null;
 let flashActivo = false;
 
-// Iniciar cámara al cargar
+// Navegación entre pestañas
+pestanas.forEach(p => {
+    p.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.pestana').forEach(x => x.classList.remove('activa'));
+        p.classList.add('activa');
+        const cual = p.dataset.vista;
+        vistaCamara.classList.toggle('oculta', cual !== 'camara');
+        vistaGaleria.classList.toggle('oculta', cual !== 'galeria');
+    });
+});
+
 document.addEventListener('DOMContentLoaded', iniciarCamara);
 
 async function iniciarCamara() {
     try {
         const opciones = {
-            video: {
-                width: { ideal: 1920 },
-                height: { ideal: 1080 },
-                facingMode: camaraFrontal ? 'user' : 'environment'
-            },
+            video: { width: { ideal: 1920 }, height: { ideal: 1080 }, facingMode: camaraFrontal ? 'user' : 'environment' },
             audio: modoActual === 'video'
         };
-
         if (transmision) transmision.getTracks().forEach(t => t.stop());
-
         transmision = await navigator.mediaDevices.getUserMedia(opciones);
         video.srcObject = transmision;
         await video.play();
-
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         video.classList.toggle('espejo', camaraFrontal);
         aviso.classList.add('oculto');
-
     } catch (err) {
         aviso.classList.remove('oculto');
-        aviso.innerHTML = `❌ Error de conexión<br><small>${err.message}</small><br><small>Usa HTTPS/GitHub Pages y acepta el permiso</small>`;
-        console.error(err);
+        aviso.innerHTML = `❌ Error<br><small>${err.message}</small><br><small>Usa HTTPS y acepta permiso</small>`;
     }
 }
 
-// Cambiar cámara
-botonCambiar.addEventListener('click', e => {
-    e.preventDefault();
-    camaraFrontal = !camaraFrontal;
-    iniciarCamara();
-});
+botonCambiar.addEventListener('click', e => { e.preventDefault(); camaraFrontal = !camaraFrontal; iniciarCamara(); });
 
-// Cambiar modos
 document.querySelectorAll('.modo').forEach(m => {
     m.addEventListener('click', e => {
         e.preventDefault();
@@ -433,32 +354,26 @@ document.querySelectorAll('.modo').forEach(m => {
     });
 });
 
-// Flash
 iconoFlash.addEventListener('click', e => {
     e.preventDefault();
     flashActivo = !flashActivo;
     iconoFlash.style.fill = flashActivo ? '#ffeb3b' : '#fff';
     if (transmision) {
         const pista = transmision.getVideoTracks()[0];
-        if (pista && 'applyConstraints' in pista) {
-            pista.applyConstraints({ advanced: [{ torch: flashActivo }] }).catch(() => {});
-        }
+        if (pista?.applyConstraints) pista.applyConstraints({ advanced: [{ torch: flashActivo }] }).catch(() => {});
     }
 });
 
-// Tocar para enfocar
 areaCamara.addEventListener('click', e => {
     e.preventDefault();
     const rect = areaCamara.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
     marcoEnfoque.style.left = x + 'px';
     marcoEnfoque.style.top = y + 'px';
     marcoEnfoque.classList.add('visible');
     setTimeout(() => marcoEnfoque.classList.remove('visible'), 1000);
 });
 
-// Disparar
 botonDisparo.addEventListener('click', e => {
     e.preventDefault();
     if (modoActual === 'foto' || modoActual === 'retrato') tomarFoto();
@@ -472,18 +387,15 @@ function tomarFoto() {
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const datos = canvas.toDataURL('image/png');
-    ultimaImagen = datos;
+
+    // ✅ GUARDAR EN BASE DE DATOS — SIN DESCARGAR
+    guardarEnBD(datos);
 
     imgPrevia.src = datos;
     vistaPrevia.classList.add('mostrar');
     ultimaFoto.src = datos;
     ultimaFoto.style.display = 'block';
     iconoGaleriaVacio.style.display = 'none';
-
-    const a = document.createElement('a');
-    a.href = datos;
-    a.download = `foto_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.png`;
-    a.click();
 
     setTimeout(() => vistaPrevia.classList.remove('mostrar'), 3000);
 }
@@ -496,16 +408,12 @@ function iniciarGrabacion() {
     tiempoGrab.classList.add('activo');
     tiempoInicio = Date.now();
     intervaloTiempo = setInterval(actualizarTiempo, 1000);
-
     try {
         mediaRecorder = new MediaRecorder(transmision, { mimeType: 'video/webm' });
         mediaRecorder.ondataavailable = e => e.data.size > 0 && datosVideo.push(e.data);
         mediaRecorder.onstop = guardarVideo;
         mediaRecorder.start(1000);
-    } catch (e) {
-        alert('Grabación no soportada en este navegador');
-        grabando = false;
-    }
+    } catch { alert('Grabación no soportada'); grabando = false; }
 }
 
 function detenerGrabacion() {
@@ -532,14 +440,69 @@ function guardarVideo() {
     setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
-botonGaleria.addEventListener('click', e => {
-    e.preventDefault();
-    if (ultimaImagen) {
-        const a = document.createElement('a');
-        a.href = ultimaImagen;
-        a.target = '_blank';
-        a.click();
+// ================= GALERÍA =================
+function cargarGaleria() {
+    obtenerTodas(fotos => {
+        cuadriculaFotos.innerHTML = '';
+        if (fotos.length === 0) {
+            galeriaVacia.classList.remove('oculto');
+            return;
+        }
+        galeriaVacia.classList.add('oculto');
+        // Más recientes primero
+        fotos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)).forEach(foto => {
+            const elem = document.createElement('div');
+            elem.className = 'foto-item';
+            elem.innerHTML = `
+                <img src="${foto.imagen}" alt="">
+                <span class="fecha">${new Date(foto.fecha).toLocaleString('es-EC')}</span>
+                <div class="acciones-foto">
+                    <button class="btn-accion btn-descargar" data-id="${foto.id}" title="Guardar">💾</button>
+                    <button class="btn-accion btn-borrar" data-id="${foto.id}" title="Eliminar">🗑️</button>
+                </div>
+            `;
+            elem.querySelector('img').addEventListener('click', () => {
+                fotoActivaId = foto.id;
+                imgVisor.src = foto.imagen;
+                visor.classList.add('activo');
+            });
+            elem.querySelector('.btn-descargar').addEventListener('click', e => {
+                e.stopPropagation();
+                const a = document.createElement('a');
+                a.href = foto.imagen;
+                a.download = `foto_${foto.id}.png`;
+                a.click();
+            });
+            elem.querySelector('.btn-borrar').addEventListener('click', e => {
+                e.stopPropagation();
+                if (confirm('¿Eliminar esta foto?')) eliminarDeBD(foto.id);
+            });
+            cuadriculaFotos.appendChild(elem);
+        });
+    });
+}
+
+// Visor
+document.getElementById('btnCerrarVisor').addEventListener('click', () => visor.classList.remove('activo'));
+document.getElementById('btnDescargarVisor').addEventListener('click', () => {
+    const a = document.createElement('a');
+    a.href = imgVisor.src;
+    a.download = `foto_${fotoActivaId}.png`;
+    a.click();
+});
+document.getElementById('btnEliminarVisor').addEventListener('click', () => {
+    if (confirm('¿Eliminar esta foto?')) {
+        eliminarDeBD(fotoActivaId);
+        visor.classList.remove('activo');
     }
+});
+
+// Ir a galería al tocar miniatura
+document.getElementById('botonGaleria').addEventListener('click', () => {
+    document.querySelectorAll('.pestana').forEach(p => p.classList.remove('activa'));
+    document.querySelector('[data-vista="galeria"]').classList.add('activa');
+    vistaCamara.classList.add('oculta');
+    vistaGaleria.classList.remove('oculta');
 });
 </script>
 </body>
