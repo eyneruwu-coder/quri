@@ -92,7 +92,7 @@
 <body>
     <div class="calculadora" id="calc">
         <div class="modo-top">
-            <button class="btn-modo" onclick="alternarModo()" id="etiquetaModo">”9ç4 Cient¨ªfica</button>
+            <button class="btn-modo" onclick="alternarModo()" id="etiquetaModo">â€9Ã§4 CientÂ¨Âªfica</button>
         </div>
 
         <div class="pantalla">
@@ -109,14 +109,14 @@
                 <button class="func" onclick="agregar('ln(')">ln</button>
             </div>
             <div class="fila-func">
-                <button class="func" onclick="agregar('sqrt(')">¡Ì</button>
-                <button class="func" onclick="agregar('pow(,')">x0µ9</button>
+                <button class="func" onclick="agregar('sqrt(')">Â¡ÃŒ</button>
+                <button class="func" onclick="agregar('pow(,')">xÂ0Âµ9</button>
                 <button class="func" onclick="agregar('(')">(</button>
                 <button class="func" onclick="agregar(')')">)</button>
                 <button class="func" onclick="agregar('%')">%</button>
             </div>
             <div class="fila-func">
-                <button class="const" onclick="agregar('PI')">¦Ð</button>
+                <button class="const" onclick="agregar('PI')">Â¦Ã</button>
                 <button class="const" onclick="agregar('E')">e</button>
                 <button class="relleno"></button>
                 <button class="relleno"></button>
@@ -126,9 +126,9 @@
 
         <div class="botones">
             <button class="limpiar" onclick="borrar()">C</button>
-            <button class="operador" onclick="agregar('/')">¡Â</button>
-            <button class="operador" onclick="agregar('*')">¡Á</button>
-            <button class="operador" onclick="agregar('-')">6Ó1</button>
+            <button class="operador" onclick="agregar('/')">Â¡Ã‚</button>
+            <button class="operador" onclick="agregar('*')">Â¡Ã</button>
+            <button class="operador" onclick="agregar('-')">Â6Ã“1</button>
 
             <button class="numero" onclick="agregar('7')">7</button>
             <button class="numero" onclick="agregar('8')">8</button>
@@ -163,7 +163,7 @@
             esCientifica = !esCientifica;
             contenedor.classList.toggle('cientifica', esCientifica);
             bloqueCientifico.style.display = esCientifica ? 'block' : 'none';
-            etiquetaModo.textContent = esCientifica ? '”9á5 B¨¢sica' : '”9ç4 Cient¨ªfica';
+            etiquetaModo.textContent = esCientifica ? 'â€9Ã¡5 BÂ¨Â¢sica' : 'â€9Ã§4 CientÂ¨Âªfica';
         }
 
         function agregar(caracter) {
@@ -186,7 +186,7 @@
 
         function actualizar() {
             opPantalla.textContent = operacion;
-            // ”9è2 ABAJO SIEMPRE MUESTRA 0 MIENTRAS ESCRIBES ¡ª NO CAMBIA
+            // â€9Ã¨2 ABAJO SIEMPRE MUESTRA 0 MIENTRAS ESCRIBES Â¡Âª NO CAMBIA
             resPantalla.textContent = '0';
         }
 
@@ -206,7 +206,7 @@
                     .replace(/%/g, '/100');
 
                 let res = Function('"use strict"; return (' + codigo + ')')();
-                // 7¼3 SOLO AL DARLE = MUESTRA EL RESULTADO ABAJO
+                // Â7Â¼3 SOLO AL DARLE = MUESTRA EL RESULTADO ABAJO
                 resPantalla.textContent = Number.isInteger(res) ? res : parseFloat(res.toPrecision(12));
             } catch {
                 resPantalla.textContent = 'Error';
