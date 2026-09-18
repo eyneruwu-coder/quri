@@ -120,23 +120,23 @@
     <h2>📐 Calibración de Pantalla</h2>
     <div class="fila">
         <label>Margen Superior</label>
-        <input type="range" id="m-sup" min="0" max="150" value="16">
-        <span class="valor" id="v-sup">16px</span>
+        <input type="range" id="m-sup" min="0" max="150" value="0">
+        <span class="valor" id="v-sup">0px</span>
     </div>
     <div class="fila">
         <label>Margen Inferior</label>
-        <input type="range" id="m-inf" min="0" max="150" value="16">
-        <span class="valor" id="v-inf">16px</span>
+        <input type="range" id="m-inf" min="0" max="150" value="0">
+        <span class="valor" id="v-inf">0px</span>
     </div>
     <div class="fila">
         <label>Margen Izquierdo</label>
-        <input type="range" id="m-izq" min="0" max="150" value="16">
-        <span class="valor" id="v-izq">16px</span>
+        <input type="range" id="m-izq" min="0" max="150" value="0">
+        <span class="valor" id="v-izq">0px</span>
     </div>
     <div class="fila">
         <label>Margen Derecho</label>
-        <input type="range" id="m-der" min="0" max="150" value="16">
-        <span class="valor" id="v-der">16px</span>
+        <input type="range" id="m-der" min="0" max="150" value="0">
+        <span class="valor" id="v-der">0px</span>
     </div>
     <div class="fila-num">
         <label>Columnas</label>
@@ -160,7 +160,7 @@ function esImagen(valor){
     return valor.startsWith('http://') || valor.startsWith('https://') || valor.startsWith('/') || valor.includes('.jpg') || valor.includes('.png') || valor.includes('.webp') || valor.includes('.gif');
 }
 
-let config = { calibrado:false, mSup:16, mInf:16, mIzq:16, mDer:16, cols:4, filas:6, colorFondo:'#ffffff' };
+let config = { calibrado:false, mSup:0, mInf:0, mIzq:0, mDer:0, cols:4, filas:6, colorFondo:'#ffffff' };
 let orden = [];
 
 function obtenerListaApps(){
